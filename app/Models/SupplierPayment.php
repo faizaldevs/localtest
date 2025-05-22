@@ -39,4 +39,9 @@ class SupplierPayment extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    public function staffDiscrepancy()
+    {
+        return $this->hasOne(StaffDiscrepancy::class);
+    }
 }

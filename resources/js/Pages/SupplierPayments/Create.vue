@@ -99,13 +99,15 @@ const fetchSupplierData = async () => {
         );
 
         suppliers.value = suppliersResponse.data.map(supplier => {
-            const existingPayment = paymentMap.get(supplier.id);
-            return {
+            const existingPayment = paymentMap.get(supplier.id);            return {
                 ...supplier,
                 payment_amount: existingPayment ? existingPayment.paid_amount : 0,
                 loan_deduction: existingPayment ? existingPayment.loan_deduction : 0,
                 notes: existingPayment ? existingPayment.notes : '',
-                payment_id: existingPayment ? existingPayment.id : null
+                payment_id: existingPayment ? existingPayment.id : null,
+                staff_id: selectedStaff.value,
+                staff_deduction: existingPayment?.staff_discrepancy?.discrepancy_amount || 0,
+                staff_notes: existingPayment?.staff_discrepancy?.notes || ''
             };
         });
     } catch (error) {
@@ -135,8 +137,19 @@ const savePayments = async () => {
         };
 
         await axios.post('/api/supplier-payments/store', {
-            payment_date: formatToLocalDate(paymentDate.value),
-            suppliers: suppliers.value,
+            payment_date: formatToLocalDate(paymentDate.value),            suppliers: suppliers.value.map(supplier => {
+                const data = {
+                    id: supplier.id,
+                    staff_id: selectedStaff.value,
+                    payment_amount: supplier.payment_amount,
+                    loan_deduction: supplier.loan_deduction,
+                    staff_deduction: supplier.staff_deduction,
+                    notes: supplier.notes,
+                    staff_notes: supplier.staff_notes,
+                    payment_id: supplier.payment_id || null
+                };
+                return data;
+            }),
             date_range: [
                 formatToLocalDate(dateRange.value[0]),
                 formatToLocalDate(dateRange.value[1])
@@ -153,7 +166,9 @@ const savePayments = async () => {
                     ...s,
                     payment_amount: 0,
                     loan_deduction: 0,
-                    notes: ''
+                    notes: '',
+                    staff_deduction: 0,
+                    staff_notes: ''
                 }));
             }
         });
@@ -224,6 +239,8 @@ const savePayments = async () => {
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Deduction</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier Payment Notes</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Deduction</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Notes</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -257,6 +274,20 @@ const savePayments = async () => {
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <TextInput
                                         v-model="supplier.notes"
+                                        type="text"
+                                        class="w-48"
+                                    />
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <TextInput
+                                        v-model="supplier.staff_deduction"
+                                        type="number"
+                                        class="w-32"
+                                    />
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <TextInput
+                                        v-model="supplier.staff_notes"
                                         type="text"
                                         class="w-48"
                                     />

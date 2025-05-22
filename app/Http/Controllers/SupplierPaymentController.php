@@ -60,29 +60,31 @@ class SupplierPaymentController extends Controller
         ]);
 
         $fromDate = Carbon::parse($request->from_date)->startOfDay();
-        $toDate = Carbon::parse($request->to_date)->endOfDay();
-
-        $payments = SupplierPayment::whereHas('supplier', function($query) use ($request) {
+        $toDate = Carbon::parse($request->to_date)->endOfDay();        $payments = SupplierPayment::whereHas('supplier', function($query) use ($request) {
                 $query->where('staff_id', $request->staff_id);
             })
+            ->with('staffDiscrepancy') // Include staff discrepancy relationship
             ->whereBetween('period_from', [$fromDate->format('Y-m-d'), $toDate->format('Y-m-d')])
             ->get();
 
         return response()->json($payments);
-    }
-
-    public function store(Request $request)
+    }    public function store(Request $request)
     {
+        \Log::info('Supplier Payment Request:', $request->all());
+
         $request->validate([
             'payment_date' => 'required|date',
             'date_range' => 'required|array|size:2',
             'date_range.*' => 'required|date',
             'suppliers' => 'required|array',
             'suppliers.*.id' => 'required|exists:suppliers,id',
+            'suppliers.*.staff_id' => 'required|exists:staff,id',
             'suppliers.*.payment_amount' => 'required|numeric|min:0',
             'suppliers.*.loan_deduction' => 'required|numeric|min:0',
+            'suppliers.*.staff_deduction' => 'required|numeric|min:0',
             'suppliers.*.notes' => 'nullable|string',
-            'suppliers.*.payment_id' => 'nullable|exists:supplier_payments,id'
+            'suppliers.*.staff_notes' => 'nullable|string',
+            'suppliers.*.payment_id' => 'present|nullable'
         ]);
 
         foreach ($request->suppliers as $supplierData) {
@@ -117,10 +119,22 @@ class SupplierPaymentController extends Controller
 
                 if (!empty($supplierData['payment_id'])) {
                     // Update existing payment
-                    SupplierPayment::where('id', $supplierData['payment_id'])->update($paymentData);
+                    $payment = SupplierPayment::where('id', $supplierData['payment_id'])->first();
+                    $payment->update($paymentData);
                 } else {
                     // Create new payment
-                    SupplierPayment::create($paymentData);
+                    $payment = SupplierPayment::create($paymentData);
+                }
+
+                // Create staff discrepancy record if there's a staff deduction
+                if ($supplierData['staff_deduction'] > 0) {
+                    \App\Models\StaffDiscrepancy::create([
+                        'staff_id' => $supplierData['staff_id'],
+                        'supplier_payment_id' => $payment->id,
+                        'discrepancy_amount' => $supplierData['staff_deduction'],
+                        'notes' => $supplierData['staff_notes'],
+                        'status' => 'pending'
+                    ]);
                 }
             }
         }
