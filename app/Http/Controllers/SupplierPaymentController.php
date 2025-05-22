@@ -7,6 +7,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPayment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class SupplierPaymentController extends Controller
 {
@@ -15,9 +16,7 @@ class SupplierPaymentController extends Controller
         return Inertia::render('SupplierPayments/Create', [
             'staff' => Staff::with('suppliers')->get()
         ]);
-    }
-
-    public function getSuppliers(Request $request)
+    }    public function getSuppliers(Request $request)
     {
         $request->validate([
             'staff_id' => 'required|exists:staff,id',
@@ -25,9 +24,12 @@ class SupplierPaymentController extends Controller
             'to_date' => 'required|date|after_or_equal:from_date'
         ]);
 
-        $suppliers = Supplier::where('staff_id', $request->staff_id)
-            ->with(['productCollections' => function ($query) use ($request) {
-                $query->whereBetween('date', [$request->from_date, $request->to_date]);
+        // Convert dates to Carbon instances with specific time boundaries
+        $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate = Carbon::parse($request->to_date)->endOfDay();        $suppliers = Supplier::where('staff_id', $request->staff_id)
+            ->with(['productCollections' => function ($query) use ($fromDate, $toDate) {
+                $query->whereDate('date', '>=', $fromDate->format('Y-m-d'))
+                      ->whereDate('date', '<=', $toDate->format('Y-m-d'));
             }])
             ->get()
             ->map(function ($supplier) {
@@ -59,20 +61,28 @@ class SupplierPaymentController extends Controller
         ]);
 
         foreach ($request->suppliers as $supplierData) {
-            if ($supplierData['payment_amount'] > 0 || $supplierData['loan_deduction'] > 0) {
-                $collections = \App\Models\ProductCollection::where('supplier_id', $supplierData['id'])
-                    ->whereBetween('date', $request->date_range)
+            if ($supplierData['payment_amount'] > 0 || $supplierData['loan_deduction'] > 0) {                // Convert date range to Carbon instances with time boundaries
+                $periodFrom = Carbon::parse($request->date_range[0])->startOfDay();
+                $periodTo = Carbon::parse($request->date_range[1])->endOfDay();                $collections = \App\Models\ProductCollection::where('supplier_id', $supplierData['id'])
+                    ->whereDate('date', '>=', $periodFrom->format('Y-m-d'))
+                    ->whereDate('date', '<=', $periodTo->format('Y-m-d'))
                     ->get();
 
+                // Calculate weighted average cost                // Calculate total quantity and total amount from collections
+                $totalQuantity = $collections->sum('quantity');
+                
+                // Calculate total amount using the actual total from collections
+                $totalAmount = $collections->sum('total');
+                
+                // Calculate weighted average cost by using actual total amount
+                $weightedAverageCost = $totalQuantity > 0 ? $totalAmount / $totalQuantity : 0;
+
                 SupplierPayment::create([
-                    'supplier_id' => $supplierData['id'],
-                    'period_from' => $request->date_range[0],
-                    'period_to' => $request->date_range[1],
-                    'total_quantity' => $collections->sum('quantity'),
-                    'average_cost' => $collections->avg('average_cost'),
-                    'total_amount' => $collections->sum(function ($collection) {
-                        return $collection->quantity * $collection->average_cost;
-                    }),
+                    'supplier_id' => $supplierData['id'],                    'period_from' => $periodFrom,
+                    'period_to' => $periodTo,
+                    'total_quantity' => $totalQuantity,
+                    'average_cost' => $weightedAverageCost,
+                    'total_amount' => $totalAmount, // Using the actual total from collections
                     'paid_amount' => $supplierData['payment_amount'],
                     'payment_date' => $request->payment_date,
                     'notes' => $supplierData['notes'],

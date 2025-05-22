@@ -64,18 +64,22 @@ const fetchSupplierData = async () => {
     
     loading.value = true;
     try {
-        // Format dates to ensure they include the full day range
+        // Format dates to maintain local timezone dates
         const fromDate = new Date(dateRange.value[0]);
-        fromDate.setHours(0, 0, 0, 0);
-        
         const toDate = new Date(dateRange.value[1]);
-        toDate.setHours(23, 59, 59, 999);
         
+        // Format dates in YYYY-MM-DD format to avoid timezone issues
+        const formatToLocalDate = (date) => {
+            return date.getFullYear() + '-' + 
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(date.getDate()).padStart(2, '0');
+        };
+
         const response = await axios.get('/api/supplier-payments/get-suppliers', {
             params: {
                 staff_id: selectedStaff.value,
-                from_date: fromDate.toISOString(),
-                to_date: toDate.toISOString()
+                from_date: formatToLocalDate(fromDate),
+                to_date: formatToLocalDate(toDate)
             }
         });
         console.log('Supplier data from API:', response.data);  // Added debug log
@@ -106,10 +110,21 @@ const savePayments = async () => {
     }
 
     try {
+        // Format dates using the same function to ensure consistency
+        const formatToLocalDate = (date) => {
+            const d = new Date(date);
+            return d.getFullYear() + '-' + 
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
+        };
+
         await axios.post('/api/supplier-payments/store', {
-            payment_date: paymentDate.value,
+            payment_date: formatToLocalDate(paymentDate.value),
             suppliers: suppliers.value,
-            date_range: dateRange.value
+            date_range: [
+                formatToLocalDate(dateRange.value[0]),
+                formatToLocalDate(dateRange.value[1])
+            ]
         });
         
         router.visit(window.location.pathname, {
