@@ -23,7 +23,7 @@ class ProductCollectionController extends Controller
     public function create()
     {
         return Inertia::render('ProductCollections/Create', [
-            'products' => Product::select('id', 'name', 'price')->get(),
+            'products' => Product::select('id', 'name', 'price', 'cost')->get(),
             'staff' => Staff::select('id', 'name')->get(),
         ]);
     }

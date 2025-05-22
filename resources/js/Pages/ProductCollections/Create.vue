@@ -21,6 +21,7 @@
             id="product"
             v-model="form.product_id"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            @change="updateProductCost"
           >
             <option value="">Select a product</option>
             <option v-for="product in products" :key="product.id" :value="product.id">
@@ -121,6 +122,7 @@ const props = defineProps({
 });
 
 const suppliers = ref([]);
+const selectedProduct = ref(null);
 
 const form = useForm({
   date: '',
@@ -128,6 +130,26 @@ const form = useForm({
   staff_id: '',
   supplier_details: [] // Array to hold multiple supplier data
 });
+
+const updateProductCost = () => {
+  if (!form.product_id) {
+    selectedProduct.value = null;
+    return;
+  }
+  
+  const productId = parseInt(form.product_id);
+  selectedProduct.value = props.products.find(product => product.id === productId);
+  
+  console.log('Selected Product:', selectedProduct.value); // Debug line
+  
+  // Update all supplier costs with the selected product's cost
+  if (selectedProduct.value && suppliers.value.length > 0) {
+    suppliers.value.forEach(supplier => {
+      supplier.cost = selectedProduct.value.cost;
+      updateForm(supplier);
+    });
+  }
+};
 
 const loadSuppliers = async () => {
   if (!form.staff_id) {
@@ -139,7 +161,7 @@ const loadSuppliers = async () => {
     const response = await axios.get(`/api/staff/${form.staff_id}/suppliers`);
     suppliers.value = response.data.map(supplier => ({
       ...supplier,
-      cost: 0,
+      cost: selectedProduct.value ? selectedProduct.value.cost : 0,
       quantity: 0
     }));
     form.supplier_details = []; // Reset supplier details when loading new suppliers
