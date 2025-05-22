@@ -11,6 +11,7 @@ class ProductTransfer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'date',
         'from_staff_id',
         'to_staff_id',
         'location_id',

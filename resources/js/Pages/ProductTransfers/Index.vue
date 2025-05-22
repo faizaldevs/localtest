@@ -32,19 +32,25 @@
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="transfer in transfers.data" :key="transfer.id">
-                  <td class="px-6 py-4 whitespace-nowrap">{{ new Date(transfer.created_at).toLocaleDateString() }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">{{ transfer.date || new Date(transfer.created_at).toLocaleDateString() }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">{{ transfer.product.name }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">{{ transfer.from_staff ? transfer.from_staff.name : 'N/A' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {{ transfer.to_staff ? transfer.to_staff.name : transfer.location ? transfer.location.name : 'N/A' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">{{ transfer.quantity }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 whitespace-nowrap space-x-2">
                     <Link
                       :href="route('product-transfers.show', transfer.id)"
                       class="text-indigo-600 hover:text-indigo-900"
                     >
                       View
+                    </Link>
+                    <Link
+                      :href="route('product-transfers.edit', transfer.id)"
+                      class="text-blue-600 hover:text-blue-900"
+                    >
+                      Edit
                     </Link>
                   </td>
                 </tr>
