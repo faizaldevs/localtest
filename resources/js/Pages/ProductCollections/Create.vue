@@ -51,6 +51,23 @@
         <!-- Suppliers Table -->
         <div v-if="suppliers.length > 0" class="mt-8">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Suppliers</h3>
+          
+          <!-- Common Cost Field -->
+          <div class="mb-4">
+            <label for="common-cost" class="block text-sm font-medium text-gray-700">Common Cost</label>
+            <div class="mt-1 flex rounded-md shadow-sm w-48">
+              <input
+                type="number"
+                id="common-cost"
+                v-model="commonCost"
+                @input="updateAllSupplierCosts"
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                step="0.01"
+                min="0"
+              />
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -123,6 +140,7 @@ const props = defineProps({
 
 const suppliers = ref([]);
 const selectedProduct = ref(null);
+const commonCost = ref(0);
 
 const form = useForm({
   date: '',
@@ -131,16 +149,29 @@ const form = useForm({
   supplier_details: [] // Array to hold multiple supplier data
 });
 
+const updateAllSupplierCosts = () => {
+  if (suppliers.value.length > 0) {
+    suppliers.value.forEach(supplier => {
+      supplier.cost = parseFloat(commonCost.value) || 0;
+      updateForm(supplier);
+    });
+  }
+};
+
 const updateProductCost = () => {
   if (!form.product_id) {
     selectedProduct.value = null;
+    commonCost.value = 0;
     return;
   }
   
   const productId = parseInt(form.product_id);
   selectedProduct.value = props.products.find(product => product.id === productId);
   
-  console.log('Selected Product:', selectedProduct.value); // Debug line
+  // Update common cost with the selected product's cost
+  if (selectedProduct.value) {
+    commonCost.value = selectedProduct.value.cost;
+  }
   
   // Update all supplier costs with the selected product's cost
   if (selectedProduct.value && suppliers.value.length > 0) {
@@ -161,7 +192,7 @@ const loadSuppliers = async () => {
     const response = await axios.get(`/api/staff/${form.staff_id}/suppliers`);
     suppliers.value = response.data.map(supplier => ({
       ...supplier,
-      cost: selectedProduct.value ? selectedProduct.value.cost : 0,
+      cost: commonCost.value || (selectedProduct.value ? selectedProduct.value.cost : 0),
       quantity: 0
     }));
     form.supplier_details = []; // Reset supplier details when loading new suppliers
