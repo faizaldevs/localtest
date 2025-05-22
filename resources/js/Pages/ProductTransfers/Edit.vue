@@ -1,9 +1,9 @@
 <template>
-  <Head title="Create Product Transfer" />
+  <Head title="Edit Product Transfer" />
 
   <AuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Create Product Transfer</h2>
+      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Product Transfer</h2>
     </template>
 
     <div class="py-12">
@@ -71,7 +71,7 @@
                     </label>
                   </div>
 
-                  <!-- To Staff (shown when transferType is 'staff') -->
+                  <!-- To Staff -->
                   <div v-if="transferType === 'staff'" class="mt-2">
                     <select
                       v-model="form.to_staff_id"
@@ -92,7 +92,7 @@
                     </div>
                   </div>
 
-                  <!-- To Location (shown when transferType is 'location') -->
+                  <!-- To Location -->
                   <div v-if="transferType === 'location'" class="mt-2">
                     <select
                       v-model="form.location_id"
@@ -167,7 +167,7 @@
                   class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                   :disabled="form.processing"
                 >
-                  Create Transfer
+                  Update Transfer
                 </button>
                 <Link
                   :href="route('product-transfers.index')"
@@ -190,21 +190,22 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
+  transfer: Object,
   staff: Array,
   locations: Array,
   products: Array,
 });
 
-const transferType = ref('staff');
+const transferType = ref(props.transfer.location_id ? 'location' : 'staff');
 
 const form = useForm({
-  date: new Date().toISOString().split('T')[0],
-  from_staff_id: '',
-  to_staff_id: '',
-  location_id: '',
-  product_id: '',
-  quantity: '',
-  notes: ''
+  date: props.transfer.date || new Date(props.transfer.created_at).toISOString().split('T')[0],
+  from_staff_id: props.transfer.from_staff_id,
+  to_staff_id: props.transfer.to_staff_id,
+  location_id: props.transfer.location_id,
+  product_id: props.transfer.product_id,
+  quantity: props.transfer.quantity,
+  notes: props.transfer.notes,
 });
 
 const onTransferTypeChange = () => {
@@ -213,6 +214,6 @@ const onTransferTypeChange = () => {
 };
 
 const submit = () => {
-  form.post(route('product-transfers.store'));
+  form.put(route('product-transfers.update', props.transfer.id));
 };
 </script>
