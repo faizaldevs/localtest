@@ -40,6 +40,16 @@ const paymentDate = ref(null);
 const suppliers = ref([]);
 const loading = ref(false);
 
+const uniqueDates = computed(() => {
+    const dates = new Set();
+    suppliers.value.forEach(supplier => {
+        if (supplier.daily_quantities) {
+            Object.keys(supplier.daily_quantities).forEach(date => dates.add(date));
+        }
+    });
+    return Array.from(dates).sort();
+});
+
 const totals = computed(() => {
     return suppliers.value.reduce((acc, supplier) => ({
         quantity: acc.quantity + Number(supplier.total_quantity || 0),
@@ -68,12 +78,16 @@ const fetchSupplierData = async () => {
                 to_date: toDate.toISOString()
             }
         });
-        suppliers.value = response.data.map(supplier => ({
-            ...supplier,
-            payment_amount: 0,
-            loan_deduction: 0,
-            notes: ''
-        }));
+        console.log('Supplier data from API:', response.data);  // Added debug log
+        suppliers.value = response.data.map(supplier => {
+            console.log('Processing supplier:', supplier.name, 'total_amount:', supplier.total_amount); // Added debug log
+            return {
+                ...supplier,
+                payment_amount: 0,
+                loan_deduction: 0,
+                notes: ''
+            };
+        });
     } catch (error) {
         console.error('Error fetching supplier data:', error);
     } finally {
@@ -167,11 +181,13 @@ const savePayments = async () => {
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table v-if="suppliers.length" class="min-w-full divide-y divide-gray-200">
+                <div class="overflow-x-auto">                    <table v-if="suppliers.length" class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                                <th v-for="date in uniqueDates" :key="date" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ new Date(date).toLocaleDateString() }}
+                                </th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
@@ -183,11 +199,9 @@ const savePayments = async () => {
                             <tr v-for="supplier in suppliers" :key="supplier.id">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ supplier.name }}
-                                    <div class="text-sm text-gray-500 space-y-1">
-                                        <div v-for="(quantity, date) in supplier.daily_quantities" :key="date">
-                                            {{ new Date(date).toLocaleDateString() }}: {{ quantity }}
-                                        </div>
-                                    </div>
+                                </td>
+                                <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
+                                    {{ supplier.daily_quantities[date] || '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ supplier.total_quantity }}
@@ -221,6 +235,9 @@ const savePayments = async () => {
                         <tfoot>
                             <tr class="bg-gray-50 font-semibold">
                                 <td class="px-6 py-4 whitespace-nowrap">Totals</td>
+                                <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
+                                    {{ suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0) }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>

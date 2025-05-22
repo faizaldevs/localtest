@@ -38,9 +38,7 @@ class SupplierPaymentController extends Controller
                     'name' => $supplier->name,
                     'daily_quantities' => $collections->pluck('quantity', 'date'),
                     'total_quantity' => $collections->sum('quantity'),
-                    'total_amount' => $collections->sum(function ($collection) {
-                        return $collection->quantity * $collection->average_cost;
-                    })
+                    'total_amount' => $collections->sum('total')
                 ];
             });
 
