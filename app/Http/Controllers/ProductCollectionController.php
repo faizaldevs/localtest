@@ -68,4 +68,36 @@ class ProductCollectionController extends Controller
         return redirect()->route('product-collections.create')
             ->with('message', 'Product Collections created successfully');
     }
+
+    public function checkExisting(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'product_id' => 'required|exists:products,id',
+            'staff_id' => 'required|exists:staff,id',
+        ]);
+
+        $existingCollections = ProductCollection::with(['supplier'])
+            ->where('date', $request->date)
+            ->where('product_id', $request->product_id)
+            ->where('staff_id', $request->staff_id)
+            ->get();
+
+        if ($existingCollections->isEmpty()) {
+            return response()->json(['exists' => false]);
+        }
+
+        return response()->json([
+            'exists' => true,
+            'data' => [
+                'suppliers' => $existingCollections->map(function ($collection) {
+                    return [
+                        'supplier_id' => $collection->supplier_id,
+                        'cost' => $collection->cost,
+                        'quantity' => $collection->quantity
+                    ];
+                })
+            ]
+        ]);
+    }
 }

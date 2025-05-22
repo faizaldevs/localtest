@@ -64,29 +64,7 @@
                         <span class="truncate">Product Collections</span>
                     </Link>
 
-                    <Link 
-                        :href="route('suppliers.index')"
-                        class="group flex items-center px-2 py-2 text-base leading-6 font-medium rounded-md"
-                        :class="[
-                            route().current('suppliers.*')
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        ]"
-                    >
-                        <span class="truncate">Suppliers</span>
-                    </Link>
-
-                    <Link 
-                        :href="route('product-collections.create')"
-                        class="group flex items-center px-2 py-2 text-base leading-6 font-medium rounded-md"
-                        :class="[
-                            route().current('product-collections.*')
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        ]"
-                    >
-                        <span class="truncate">Product Collections</span>
-                    </Link>
+                    
 
                     <Link 
                         :href="route('staff.index')"

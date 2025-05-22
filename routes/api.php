@@ -19,5 +19,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     
-    Route::get('/staff/{staff}/suppliers', [\App\Http\Controllers\ProductCollectionController::class, 'getSuppliersByStaff']);
+    Route::get('/staff/{staff}/suppliers', [\App\Http\Controllers\StaffController::class, 'suppliers']);
+    Route::get('/product-collections/check-existing', [\App\Http\Controllers\ProductCollectionController::class, 'checkExisting']);
 });

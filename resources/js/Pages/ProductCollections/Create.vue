@@ -2,50 +2,54 @@
   <AdminLayout>
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <form @submit.prevent="submit" class="space-y-8">
-        <!-- Date Input -->
-        <div>
-          <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-          <input
-            type="date"
-            id="date"
-            v-model="form.date"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          <div v-if="form.errors.date" class="text-red-500 text-xs mt-1">{{ form.errors.date }}</div>
-        </div>
+        <!-- Date, Product, and Staff Selection in single row -->
+        <div class="grid grid-cols-3 gap-4">
+          <!-- Date Input -->
+          <div>
+            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              id="date"
+              v-model="form.date"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              @change="checkExistingEntry"
+            />
+            <div v-if="form.errors.date" class="text-red-500 text-xs mt-1">{{ form.errors.date }}</div>
+          </div>
 
-        <!-- Product Selection -->
-        <div>
-          <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
-          <select
-            id="product"
-            v-model="form.product_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            @change="updateProductCost"
-          >
-            <option value="">Select a product</option>
-            <option v-for="product in products" :key="product.id" :value="product.id">
-              {{ product.name }}
-            </option>
-          </select>
-          <div v-if="form.errors.product_id" class="text-red-500 text-xs mt-1">{{ form.errors.product_id }}</div>
-        </div>
+          <!-- Product Selection -->
+          <div>
+            <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
+            <select
+              id="product"
+              v-model="form.product_id"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              @change="onProductChange"
+            >
+              <option value="">Select a product</option>
+              <option v-for="product in products" :key="product.id" :value="product.id">
+                {{ product.name }}
+              </option>
+            </select>
+            <div v-if="form.errors.product_id" class="text-red-500 text-xs mt-1">{{ form.errors.product_id }}</div>
+          </div>
 
-        <!-- Staff Selection -->
-        <div>
-          <label for="staff" class="block text-sm font-medium text-gray-700">Staff</label>
-          <select
-            id="staff"
-            v-model="form.staff_id"
-            @change="loadSuppliers"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          >
-            <option value="">Select a staff member</option>
-            <option v-for="staffMember in staff" :key="staffMember.id" :value="staffMember.id">
-              {{ staffMember.name }}
-            </option>
-          </select>
-          <div v-if="form.errors.staff_id" class="text-red-500 text-xs mt-1">{{ form.errors.staff_id }}</div>
+          <!-- Staff Selection -->
+          <div>
+            <label for="staff" class="block text-sm font-medium text-gray-700">Staff</label>
+            <select
+              id="staff"
+              v-model="form.staff_id"
+              @change="onStaffChange"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="">Select a staff member</option>
+              <option v-for="staffMember in staff" :key="staffMember.id" :value="staffMember.id">
+                {{ staffMember.name }}
+              </option>
+            </select>
+            <div v-if="form.errors.staff_id" class="text-red-500 text-xs mt-1">{{ form.errors.staff_id }}</div>
+          </div>
         </div>
 
         <!-- Suppliers Table -->
@@ -128,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import axios from 'axios';
@@ -155,6 +159,60 @@ const updateAllSupplierCosts = () => {
       supplier.cost = parseFloat(commonCost.value) || 0;
       updateForm(supplier);
     });
+  }
+};
+
+const onProductChange = async () => {
+  await updateProductCost();
+  await checkExistingEntry();
+};
+
+const onStaffChange = async () => {
+  await loadSuppliers();
+  await checkExistingEntry();
+};
+
+const checkExistingEntry = async () => {
+  if (!form.date || !form.product_id || !form.staff_id) {
+    return;
+  }
+
+  try {
+    const response = await axios.get('/api/product-collections/check-existing', {
+      params: {
+        date: form.date,
+        product_id: form.product_id,
+        staff_id: form.staff_id
+      }
+    });
+
+    if (response.data && response.data.exists) {
+      const existingData = response.data.data;
+      commonCost.value = existingData.suppliers[0]?.cost || 0;
+      
+      // Update suppliers with existing data
+      suppliers.value = suppliers.value.map(supplier => {
+        const existingSupplier = existingData.suppliers.find(s => s.supplier_id === supplier.id);
+        if (existingSupplier) {
+          return {
+            ...supplier,
+            cost: existingSupplier.cost,
+            quantity: existingSupplier.quantity
+          };
+        }
+        return supplier;
+      });
+
+      // Update form supplier details
+      form.supplier_details = existingData.suppliers.map(supplier => ({
+        supplier_id: supplier.supplier_id,
+        cost: supplier.cost,
+        quantity: supplier.quantity,
+        total: supplier.cost * supplier.quantity
+      }));
+    }
+  } catch (error) {
+    console.error('Error checking existing entry:', error);
   }
 };
 
@@ -233,4 +291,8 @@ const updateForm = (supplier) => {
 const submit = () => {
   form.post(route('product-collections.store'));
 };
+
+watch(() => form.date, checkExistingEntry);
+watch(() => form.product_id, onProductChange);
+watch(() => form.staff_id, onStaffChange);
 </script>

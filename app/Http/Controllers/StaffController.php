@@ -108,4 +108,18 @@ class StaffController extends Controller
         return redirect()->route('staff.index')
             ->with('message', 'Staff member deleted successfully.');
     }
+
+    public function suppliers($staffId)
+    {
+        try {
+            $staff = Staff::findOrFail($staffId);
+            $suppliers = $staff->suppliers()
+                ->select('id', 'name', 'staff_id')
+                ->get();
+            
+            return response()->json($suppliers);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to load suppliers'], 500);
+        }
+    }
 }
