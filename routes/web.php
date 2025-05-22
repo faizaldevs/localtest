@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ProductTransferController;
+use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -45,6 +46,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
     Route::resource('product-collections', \App\Http\Controllers\ProductCollectionController::class);
     Route::resource('product-transfers', ProductTransferController::class);
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Supplier Payments Routes
+    Route::get('/supplier-payments/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
+    Route::get('/api/supplier-payments/get-suppliers', [SupplierPaymentController::class, 'getSuppliers'])->name('supplier-payments.get-suppliers');
+    Route::post('/api/supplier-payments/store', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
 });
 
 require __DIR__.'/auth.php';

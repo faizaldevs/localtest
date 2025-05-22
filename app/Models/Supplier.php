@@ -21,4 +21,9 @@ class Supplier extends Model
     {
         return $this->belongsTo(Staff::class);
     }
+
+    public function productCollections()
+    {
+        return $this->hasMany(ProductCollection::class);
+    }
 }
