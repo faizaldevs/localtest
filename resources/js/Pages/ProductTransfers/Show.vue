@@ -65,8 +65,7 @@
           </div>
         </div>
       </div>
-    </div>
-  </AuthenticatedLayout>
+    </div>  </AuthenticatedLayout>
 </template>
 
 <script setup>
@@ -76,3 +75,4 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 defineProps({
   transfer: Object,
 });
+</script>
