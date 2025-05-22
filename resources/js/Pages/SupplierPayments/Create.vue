@@ -75,21 +75,37 @@ const fetchSupplierData = async () => {
                    String(date.getDate()).padStart(2, '0');
         };
 
-        const response = await axios.get('/api/supplier-payments/get-suppliers', {
-            params: {
-                staff_id: selectedStaff.value,
-                from_date: formatToLocalDate(fromDate),
-                to_date: formatToLocalDate(toDate)
-            }
-        });
-        console.log('Supplier data from API:', response.data);  // Added debug log
-        suppliers.value = response.data.map(supplier => {
-            console.log('Processing supplier:', supplier.name, 'total_amount:', supplier.total_amount); // Added debug log
+        // Fetch both supplier data and existing payments for the period
+        const [suppliersResponse, paymentsResponse] = await Promise.all([
+            axios.get('/api/supplier-payments/get-suppliers', {
+                params: {
+                    staff_id: selectedStaff.value,
+                    from_date: formatToLocalDate(fromDate),
+                    to_date: formatToLocalDate(toDate)
+                }
+            }),
+            axios.get('/api/supplier-payments/get-existing-payments', {
+                params: {
+                    staff_id: selectedStaff.value,
+                    from_date: formatToLocalDate(fromDate),
+                    to_date: formatToLocalDate(toDate)
+                }
+            })
+        ]);
+
+        // Create a map of supplier ID to their payment data
+        const paymentMap = new Map(
+            paymentsResponse.data.map(payment => [payment.supplier_id, payment])
+        );
+
+        suppliers.value = suppliersResponse.data.map(supplier => {
+            const existingPayment = paymentMap.get(supplier.id);
             return {
                 ...supplier,
-                payment_amount: 0,
-                loan_deduction: 0,
-                notes: ''
+                payment_amount: existingPayment ? existingPayment.paid_amount : 0,
+                loan_deduction: existingPayment ? existingPayment.loan_deduction : 0,
+                notes: existingPayment ? existingPayment.notes : '',
+                payment_id: existingPayment ? existingPayment.id : null
             };
         });
     } catch (error) {
@@ -207,7 +223,7 @@ const savePayments = async () => {
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Deduction</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier Payment Notes</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
