@@ -13,6 +13,17 @@ class StaffController extends Controller
     {
         return Inertia::render('Staff/Index', [
             'staff' => Staff::with('location')
+                ->withCount([
+                    'productCollections as collections_quantity_sum' => function ($query) {
+                        $query->select(\DB::raw('COALESCE(SUM(quantity), 0)'));
+                    },
+                    'productsReceived as received_quantity_sum' => function ($query) {
+                        $query->select(\DB::raw('COALESCE(SUM(quantity), 0)'));
+                    },
+                    'productsSent as sent_quantity_sum' => function ($query) {
+                        $query->select(\DB::raw('COALESCE(SUM(quantity), 0)'));
+                    },
+                ])
                 ->latest()
                 ->paginate(10)
                 ->through(fn ($staff) => [
@@ -21,6 +32,7 @@ class StaffController extends Controller
                     'phone' => $staff->phone,
                     'address' => $staff->address,
                     'salary' => $staff->salary,
+                    'total_products' => $staff->collections_quantity_sum + $staff->received_quantity_sum - $staff->sent_quantity_sum,
                     'location' => $staff->location ? [
                         'id' => $staff->location->id,
                         'name' => $staff->location->name,

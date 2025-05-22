@@ -22,37 +22,39 @@
 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <table class="min-w-full table-auto">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">Name</th>
-                        <th class="py-3 px-6 text-left">Phone</th>
-                        <th class="py-3 px-6 text-left">Location</th>
-                        <th class="py-3 px-6 text-right">Salary</th>
-                        <th class="py-3 px-6 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 text-sm">
-                    <tr v-for="member in staff.data" :key="member.id" class="border-b border-gray-200 hover:bg-gray-100">
-                        <td class="py-3 px-6 text-left">{{ member.name }}</td>
-                        <td class="py-3 px-6 text-left">{{ member.phone }}</td>
-                        <td class="py-3 px-6 text-left">{{ member.location?.name }}</td>
-                        <td class="py-3 px-6 text-right">{{ member.salary ? formatCurrency(member.salary) : 'N/A' }}</td>
-                        <td class="py-3 px-6 text-center">
-                            <div class="flex item-center justify-center">
-                                <Link :href="route('staff.show', member.id)" class="text-blue-500 hover:text-blue-700 mx-2">
-                                    View
-                                </Link>
-                                <Link :href="route('staff.edit', member.id)" class="text-yellow-500 hover:text-yellow-700 mx-2">
-                                    Edit
-                                </Link>
-                                <button @click="deleteStaff(member)" class="text-red-500 hover:text-red-700 mx-2">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Name</th>
+                                <th class="py-3 px-6 text-left">Phone</th>
+                                <th class="py-3 px-6 text-left">Location</th>
+                                <th class="py-3 px-6 text-right">Total Quantity</th>
+                                <th class="py-3 px-6 text-right">Salary</th>
+                                <th class="py-3 px-6 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm">
+                            <tr v-for="member in staff.data" :key="member.id" class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left">{{ member.name }}</td>
+                                <td class="py-3 px-6 text-left">{{ member.phone }}</td>
+                                <td class="py-3 px-6 text-left">{{ member.location?.name }}</td>
+                                <td class="py-3 px-6 text-right">{{ formatNumber(member.total_products) }}</td>
+                                <td class="py-3 px-6 text-right">{{ member.salary ? formatCurrency(member.salary) : 'N/A' }}</td>
+                                <td class="py-3 px-6 text-center">
+                                    <div class="flex item-center justify-center">
+                                        <Link :href="route('staff.show', member.id)" class="text-blue-500 hover:text-blue-700 mx-2">
+                                            View
+                                        </Link>
+                                        <Link :href="route('staff.edit', member.id)" class="text-yellow-500 hover:text-yellow-700 mx-2">
+                                            Edit
+                                        </Link>
+                                        <button @click="deleteStaff(member)" class="text-red-500 hover:text-red-700 mx-2">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="mt-6">
                     <Pagination :links="staff.links" />
@@ -90,5 +92,9 @@ const formatCurrency = (value) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(value);
+};
+
+const formatNumber = (value) => {
+    return new Intl.NumberFormat('en-US').format(value);
 };
 </script>
