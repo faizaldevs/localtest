@@ -53,6 +53,13 @@ class ProductCollectionController extends Controller
             'supplier_details.*.cost' => 'required|numeric|min:0',
         ]);
 
+        // Delete existing entries for the same date, product, and staff
+        ProductCollection::where('date', $request->date)
+            ->where('product_id', $request->product_id)
+            ->where('staff_id', $request->staff_id)
+            ->delete();
+
+        // Create new entries
         foreach ($request->supplier_details as $detail) {
             ProductCollection::create([
                 'product_id' => $request->product_id,
@@ -66,7 +73,7 @@ class ProductCollectionController extends Controller
         }
 
         return redirect()->route('product-collections.create')
-            ->with('message', 'Product Collections created successfully');
+            ->with('message', 'Product Collections updated successfully');
     }
 
     public function checkExisting(Request $request)
