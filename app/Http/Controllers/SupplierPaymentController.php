@@ -36,15 +36,22 @@ class SupplierPaymentController extends Controller
                       ->whereDate('date', '<=', $toDate->format('Y-m-d'));
             }])
             ->get()
-            ->map(function ($supplier) {
+            ->map(function ($supplier) use ($fromDate, $toDate) {
                 $collections = $supplier->productCollections;
+                
+                // Calculate total previous payments
+                $totalPreviousPayments = SupplierPayment::where('supplier_id', $supplier->id)
+                    ->whereDate('period_from', '>=', $fromDate->format('Y-m-d'))
+                    ->whereDate('period_to', '<=', $toDate->format('Y-m-d'))
+                    ->sum('amount_paid');
                 
                 return [
                     'id' => $supplier->id,
                     'name' => $supplier->name,
                     'daily_quantities' => $collections->pluck('quantity', 'date'),
                     'total_quantity' => $collections->sum('quantity'),
-                    'total_amount' => $collections->sum('total')
+                    'total_amount' => $collections->sum('total'),
+                    'total_previous_payments' => $totalPreviousPayments
                 ];
             });
 
@@ -115,16 +122,8 @@ class SupplierPaymentController extends Controller
                     'notes' => $supplierData['notes'],
                     'loan_deduction' => $supplierData['loan_deduction'],
                     'amount_paid' => $supplierData['payment_amount'] - $supplierData['loan_deduction']
-                ];
-
-                if (!empty($supplierData['payment_id'])) {
-                    // Update existing payment
-                    $payment = SupplierPayment::where('id', $supplierData['payment_id'])->first();
-                    $payment->update($paymentData);
-                } else {
-                    // Create new payment
-                    $payment = SupplierPayment::create($paymentData);
-                }
+                ];                // Always create new payment records
+                $payment = SupplierPayment::create($paymentData);
 
                 // Create staff discrepancy record if there's a staff deduction
                 if ($supplierData['staff_deduction'] > 0) {

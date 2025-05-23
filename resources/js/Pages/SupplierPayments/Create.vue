@@ -50,13 +50,13 @@ const uniqueDates = computed(() => {
     return Array.from(dates).sort();
 });
 
-const totals = computed(() => {
-    return suppliers.value.reduce((acc, supplier) => ({
+const totals = computed(() => {    return suppliers.value.reduce((acc, supplier) => ({
         quantity: acc.quantity + Number(supplier.total_quantity || 0),
         amount: acc.amount + Number(supplier.total_amount || 0),
+        previousPayments: acc.previousPayments + Number(supplier.total_previous_payments || 0),
         payment: acc.payment + Number(supplier.payment_amount || 0),
         deduction: acc.deduction + Number(supplier.loan_deduction || 0)
-    }), { quantity: 0, amount: 0, payment: 0, deduction: 0 });
+    }), { quantity: 0, amount: 0, previousPayments: 0, payment: 0, deduction: 0 });
 });
 
 const fetchSupplierData = async () => {
@@ -96,18 +96,15 @@ const fetchSupplierData = async () => {
         // Create a map of supplier ID to their payment data
         const paymentMap = new Map(
             paymentsResponse.data.map(payment => [payment.supplier_id, payment])
-        );
-
-        suppliers.value = suppliersResponse.data.map(supplier => {
-            const existingPayment = paymentMap.get(supplier.id);            return {
+        );        suppliers.value = suppliersResponse.data.map(supplier => {            const existingPayment = paymentMap.get(supplier.id);            return {
                 ...supplier,
-                payment_amount: existingPayment ? existingPayment.paid_amount : 0,
-                loan_deduction: existingPayment ? existingPayment.loan_deduction : 0,
-                notes: existingPayment ? existingPayment.notes : '',
-                payment_id: existingPayment ? existingPayment.id : null,
+                payment_amount: 0, // Always start with zero payment amount
+                loan_deduction: 0, // Reset loan deduction as well
+                notes: existingPayment ? existingPayment.notes : '', // Keep existing notes
+                payment_id: null,
                 staff_id: selectedStaff.value,
-                staff_deduction: existingPayment?.staff_discrepancy?.discrepancy_amount || 0,
-                staff_notes: existingPayment?.staff_discrepancy?.notes || ''
+                staff_deduction: 0, // Reset staff deduction
+                staff_notes: existingPayment ? existingPayment.staff_discrepancy?.notes : '' // Keep existing staff notes
             };
         });
     } catch (error) {
@@ -234,8 +231,8 @@ const savePayments = async () => {
                                 <th v-for="date in uniqueDates" :key="date" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {{ new Date(date).toLocaleDateString() }}
                                 </th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous Payments</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Deduction</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier Payment Notes</th>
@@ -253,9 +250,11 @@ const savePayments = async () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ supplier.total_quantity }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                </td>                                <td class="px-6 py-4 whitespace-nowrap">
                                     {{ formatCurrency(supplier.total_amount) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                                    {{ formatCurrency(supplier.total_previous_payments || 0) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <TextInput
@@ -300,8 +299,8 @@ const savePayments = async () => {
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
                                     {{ suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.previousPayments) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.deduction) }}</td>
                                 <td></td>
