@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ProductTransferController;
 use App\Http\Controllers\SupplierPaymentController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
     Route::resource('product-collections', \App\Http\Controllers\ProductCollectionController::class);
     Route::resource('product-transfers', ProductTransferController::class);
+    Route::resource('customers', CustomerController::class);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
