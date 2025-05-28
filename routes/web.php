@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ProductTransferController;
+use App\Http\Controllers\ProductSaleController;
 use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\CustomerController;
 use Illuminate\Foundation\Application;
@@ -20,16 +21,16 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
 
-Route::get('/dashboard', function () {
+Route::get('/', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -48,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('product-collections', \App\Http\Controllers\ProductCollectionController::class);
     Route::resource('product-transfers', ProductTransferController::class);
     Route::resource('customers', CustomerController::class);
+    Route::resource('product-sales', ProductSaleController::class);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

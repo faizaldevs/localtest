@@ -22,6 +22,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/staff/{staff}/suppliers', [\App\Http\Controllers\StaffController::class, 'suppliers']);
     Route::get('/product-collections/check-existing', [\App\Http\Controllers\ProductCollectionController::class, 'checkExisting']);
+
+    Route::get('/staff/{staff}/customers', function (Staff $staff) {
+        return $staff->customers;
+    });
+
+    Route::get('/product-sales/check-existing', [\App\Http\Controllers\ProductSaleController::class, 'checkExisting']);
 });
 
 Route::get('/staff', function () {
