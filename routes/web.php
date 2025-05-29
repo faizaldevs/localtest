@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductTransferController;
 use App\Http\Controllers\ProductSaleController;
 use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerPaymentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,7 +32,14 @@ use Inertia\Inertia;
 // });
 
 Route::get('/', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard', [
+        'counts' => [
+            'locations' => \App\Models\Location::count(),
+            'staff' => \App\Models\Staff::count(),
+            'customers' => \App\Models\Customer::count(),
+            'suppliers' => \App\Models\Supplier::count(),
+        ]
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -58,6 +66,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/supplier-payments/get-suppliers', [SupplierPaymentController::class, 'getSuppliers'])->name('supplier-payments.get-suppliers');
     Route::get('/api/supplier-payments/get-existing-payments', [SupplierPaymentController::class, 'getExistingPayments'])->name('supplier-payments.get-existing-payments');
     Route::post('/api/supplier-payments/store', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
+
+    // Customer Payments Routes
+    Route::get('/customer-payments/create', [CustomerPaymentController::class, 'create'])->name('customer-payments.create');
+    Route::get('/api/customer-payments/get-customers', [CustomerPaymentController::class, 'getCustomers'])->name('customer-payments.get-customers');
+    Route::get('/api/customer-payments/get-existing-payments', [CustomerPaymentController::class, 'getExistingPayments'])->name('customer-payments.get-existing-payments');
+    Route::post('/api/customer-payments/store', [CustomerPaymentController::class, 'store'])->name('customer-payments.store');
+
+    // Customer Prepaid Payments Routes
+    Route::get('/customer-prepaid-payments/create', [CustomerPaymentController::class, 'createPrepaid'])->name('customer-prepaid-payments.create');
+    Route::get('/api/staff/{staffId}/customers-with-prepaid', [CustomerPaymentController::class, 'getCustomersWithPrepaid']);
+    Route::post('/api/customer-prepaid-payments/store', [CustomerPaymentController::class, 'storePrepaid'])->name('customer-prepaid-payments.store');
+
 });
 
 require __DIR__.'/auth.php';

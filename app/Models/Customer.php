@@ -21,4 +21,9 @@ class Customer extends Model
     {
         return $this->belongsTo(Staff::class);
     }
+
+    public function productSales()
+    {
+        return $this->hasMany(ProductSale::class);
+    }
 }
