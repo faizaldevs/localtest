@@ -10,4 +10,16 @@ class Product extends Model
     use HasFactory;
     
     protected $fillable = ['name', 'price', 'cost'];
+
+    protected $appends = ['total_quantity_sold'];
+
+    public function productSales()
+    {
+        return $this->hasMany(ProductSale::class);
+    }
+
+    public function getTotalQuantitySoldAttribute()
+    {
+        return $this->productSales()->sum('quantity');
+    }
 }

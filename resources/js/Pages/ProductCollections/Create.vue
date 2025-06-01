@@ -190,7 +190,7 @@ const checkExistingEntry = async () => {
   }
 
   try {
-    const response = await axios.get('/api/product-collections/check-existing', {
+    const response = await axios.get('/product-collections/check-existing', {
       params: {
         date: form.date,
         product_id: form.product_id,
@@ -276,7 +276,7 @@ const loadSuppliers = async () => {
   }
   
   try {
-    const response = await axios.get(`/api/staff/${form.staff_id}/suppliers`);
+    const response = await axios.get(`/staff/${form.staff_id}/suppliers`);
     suppliers.value = response.data.map(supplier => ({
       ...supplier,
       cost: commonCost.value || (selectedProduct.value ? selectedProduct.value.cost : 0),

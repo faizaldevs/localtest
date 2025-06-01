@@ -59,9 +59,7 @@ const loadCustomers = async () => {
         return d.getFullYear() + '-' + 
                String(d.getMonth() + 1).padStart(2, '0') + '-' +
                String(d.getDate()).padStart(2, '0');
-    };
-    
-    try {
+    };      try {
         // Load customers and their existing prepaid payments if any
         const response = await fetch(`/api/staff/${selectedStaff.value}/customers-with-prepaid?date=${formatToLocalDate(paymentDate.value)}`);
         const data = await response.json();

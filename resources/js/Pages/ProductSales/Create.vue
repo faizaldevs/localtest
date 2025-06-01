@@ -204,7 +204,7 @@ const checkExistingEntry = async () => {
   }
 
   try {
-    const response = await axios.get('/api/product-sales/check-existing', {
+    const response = await axios.get('/product-sales/check-existing', {
       params: {
         date: form.date,
         product_id: form.product_id,
@@ -219,25 +219,24 @@ const checkExistingEntry = async () => {
       // Update customers with existing data
       customers.value = customers.value.map(customer => {
         const existingCustomer = existingData.customers.find(c => c.customer_id === customer.id);
-        if (existingCustomer) {
-          return {
-            ...customer,
-            price: existingCustomer.price,
-            quantity: existingCustomer.quantity,
-            payment_mode: existingCustomer.payment_mode
-          };
-        }
-        return customer;
+        return {
+          ...customer,
+          price: existingCustomer ? existingCustomer.price : commonPrice.value,
+          quantity: existingCustomer ? existingCustomer.quantity : 0,
+          payment_mode: existingCustomer ? existingCustomer.payment_mode : 'postpaid'
+        };
       });
 
       // Update form customer details
-      form.customer_details = existingData.customers.map(customer => ({
-        customer_id: customer.customer_id,
-        price: customer.price,
-        quantity: customer.quantity,
-        total: customer.price * customer.quantity,
-        payment_mode: customer.payment_mode
-      }));
+      form.customer_details = customers.value
+        .filter(customer => customer.quantity > 0)
+        .map(customer => ({
+          customer_id: customer.id,
+          price: customer.price,
+          quantity: customer.quantity,
+          total: customer.price * customer.quantity,
+          payment_mode: customer.payment_mode
+        }));
     } else {
       // Set default values when no existing data is found
       if (customers.value.length > 0) {
@@ -248,14 +247,8 @@ const checkExistingEntry = async () => {
           payment_mode: 'postpaid' // Default payment mode
         }));
 
-        // Update form customer details with default values
-        form.customer_details = customers.value.map(customer => ({
-          customer_id: customer.id,
-          price: commonPrice.value,
-          quantity: 0,
-          total: 0,
-          payment_mode: 'postpaid'
-        }));
+        // Reset form customer details when no existing data
+        form.customer_details = [];
       }
     }
   } catch (error) {
@@ -293,8 +286,7 @@ const loadCustomers = async () => {
     return;
   }
   
-  try {
-    const response = await axios.get(`/api/staff/${form.staff_id}/customers`);
+  try {    const response = await axios.get(`/staff/${form.staff_id}/customers`);
     customers.value = response.data.map(customer => ({
       ...customer,
       price: commonPrice.value || (selectedProduct.value ? selectedProduct.value.price : 0),

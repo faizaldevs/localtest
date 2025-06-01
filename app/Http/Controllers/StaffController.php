@@ -23,6 +23,9 @@ class StaffController extends Controller
                     'productsSent as sent_quantity_sum' => function ($query) {
                         $query->select(\DB::raw('COALESCE(SUM(quantity), 0)'));
                     },
+                    'productSales as sales_quantity_sum' => function ($query) {
+                        $query->select(\DB::raw('COALESCE(SUM(quantity), 0)'));
+                    },
                 ])
                 ->latest()
                 ->paginate(10)
@@ -32,7 +35,7 @@ class StaffController extends Controller
                     'phone' => $staff->phone,
                     'address' => $staff->address,
                     'salary' => $staff->salary,
-                    'total_products' => $staff->collections_quantity_sum + $staff->received_quantity_sum - $staff->sent_quantity_sum,
+                    'total_products' => $staff->collections_quantity_sum + $staff->received_quantity_sum - $staff->sent_quantity_sum - $staff->sales_quantity_sum,
                     'location' => $staff->location ? [
                         'id' => $staff->location->id,
                         'name' => $staff->location->name,

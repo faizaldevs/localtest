@@ -39,10 +39,8 @@ class ProductSaleController extends Controller
             'customer_details.*.price' => 'required|numeric|min:0',
             'customer_details.*.total' => 'required|numeric|min:0',
             'customer_details.*.payment_mode' => 'required|in:prepaid,cash,postpaid'
-        ]);
-
-        foreach ($request->customer_details as $detail) {
-            ProductSale::create([
+        ]);        foreach ($request->customer_details as $detail) {
+            $saleData = [
                 'date' => $request->date,
                 'customer_id' => $detail['customer_id'],
                 'staff_id' => $request->staff_id,
@@ -52,8 +50,23 @@ class ProductSaleController extends Controller
                 'total' => $detail['total'],
                 'payment_mode' => $detail['payment_mode'],
                 'sale_type' => 'delivery' // Default to delivery since it's staff-customer based
-            ]);
-        }        return redirect()->route('product-sales.index')
+            ];
+
+            // Try to find existing record for this customer on this date
+            $existingSale = ProductSale::where('date', $request->date)
+                ->where('customer_id', $detail['customer_id'])
+                ->where('product_id', $request->product_id)
+                ->where('staff_id', $request->staff_id)
+                ->first();
+
+            if ($existingSale) {
+                // Update existing record
+                $existingSale->update($saleData);
+            } else {
+                // Create new record if none exists
+                ProductSale::create($saleData);
+            }
+        }return redirect()->route('product-sales.index')
             ->with('message', 'Product sales were successfully created')
             ->with('type', 'success');
     }
@@ -92,4 +105,6 @@ class ProductSaleController extends Controller
 
         return response()->json($salesData);
     }
+
+  
 }

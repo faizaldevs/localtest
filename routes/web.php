@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductSaleController;
 use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
+use App\Models\Staff;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -54,18 +55,32 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', \App\Http\Controllers\ProductController::class);
     Route::resource('staff', StaffController::class);
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+    Route::get('/product-collections/check-existing', [\App\Http\Controllers\ProductCollectionController::class, 'checkExisting']);
+    
     Route::resource('product-collections', \App\Http\Controllers\ProductCollectionController::class);
     Route::resource('product-transfers', ProductTransferController::class);
     Route::resource('customers', CustomerController::class);
+    
+    // Custom routes should be before the resource route
+    Route::get('/product-sales/check-existing', [\App\Http\Controllers\ProductSaleController::class, 'checkExisting']);
     Route::resource('product-sales', ProductSaleController::class);
+    
+    // Moved from api.php
+    Route::get('/staff/{staff}/suppliers', [\App\Http\Controllers\StaffController::class, 'suppliers']);
+    Route::get('/staff/{staff}/customers', function (Staff $staff) {
+        return $staff->customers;
+    });
+    Route::get('/staff-list', function () {
+        return Staff::select('id', 'name')->get();
+    })->name('staff.list');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Supplier Payments Routes
     Route::get('/supplier-payments/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
-    Route::get('/api/supplier-payments/get-suppliers', [SupplierPaymentController::class, 'getSuppliers'])->name('supplier-payments.get-suppliers');
-    Route::get('/api/supplier-payments/get-existing-payments', [SupplierPaymentController::class, 'getExistingPayments'])->name('supplier-payments.get-existing-payments');
-    Route::post('/api/supplier-payments/store', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
+    Route::get('/supplier-payments/get-suppliers', [SupplierPaymentController::class, 'getSuppliers'])->name('supplier-payments.get-suppliers');
+    Route::get('/supplier-payments/get-existing-payments', [SupplierPaymentController::class, 'getExistingPayments'])->name('supplier-payments.get-existing-payments');
+    Route::post('/supplier-payments/store', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
 
     // Customer Payments Routes
     Route::get('/customer-payments/create', [CustomerPaymentController::class, 'create'])->name('customer-payments.create');

@@ -77,14 +77,14 @@ const fetchCustomerData = async () => {
 
         // Fetch both customer data and existing payments for the period
         const [customersResponse, paymentsResponse] = await Promise.all([
-            axios.get('/api/customer-payments/get-customers', {
+            axios.get('/customer-payments/get-customers', {
                 params: {
                     staff_id: selectedStaff.value,
                     from_date: formatToLocalDate(fromDate),
                     to_date: formatToLocalDate(toDate)
                 }
             }),
-            axios.get('/api/customer-payments/get-existing-payments', {
+            axios.get('/customer-payments/get-existing-payments', {
                 params: {
                     staff_id: selectedStaff.value,
                     from_date: formatToLocalDate(fromDate),
@@ -135,7 +135,7 @@ const savePayments = async () => {
                    String(d.getDate()).padStart(2, '0');
         };
 
-        await axios.post('/api/customer-payments/store', {
+        await axios.post('/customer-payments/store', {
             payment_date: formatToLocalDate(paymentDate.value),
             customers: customers.value.map(customer => {
                 const data = {

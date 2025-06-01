@@ -87,8 +87,7 @@ const submit = () => {
     form.put(route('customers.update', props.customer.id));
 };
 
-onMounted(async () => {
-    const response = await fetch('/api/staff');
+onMounted(async () => {    const response = await fetch('/staff-list');
     staffList.value = await response.json();
 });
 </script>

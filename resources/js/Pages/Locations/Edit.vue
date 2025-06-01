@@ -1,4 +1,4 @@
-&lt;script setup&gt;
+<script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import TextInput from '@/Components/TextInput.vue';
@@ -20,40 +20,40 @@ const form = useForm({
 const submit = () => {
     form.put(route('locations.update', props.location.id));
 };
-&lt;/script&gt;
+</script>
 
-&lt;template&gt;
-    &lt;Head title="Edit Location" /&gt;
+<template>
+    <Head title="Edit Location" />
 
-    &lt;AuthenticatedLayout&gt;
-        &lt;template #header&gt;
-            &lt;h2 class="font-semibold text-xl text-gray-800 leading-tight"&gt;Edit Location&lt;/h2&gt;
-        &lt;/template&gt;
+    <AuthenticatedLayout>
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Location</h2>
+        </template>
 
-        &lt;div class="py-12"&gt;
-            &lt;div class="max-w-7xl mx-auto sm:px-6 lg:px-8"&gt;
-                &lt;div class="bg-white overflow-hidden shadow-sm sm:rounded-lg"&gt;
-                    &lt;div class="p-6"&gt;
-                        &lt;form @submit.prevent="submit"&gt;
-                            &lt;div class="mb-4"&gt;
-                                &lt;InputLabel for="name" value="Name" /&gt;
-                                &lt;TextInput
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <form @submit.prevent="submit">
+                            <div class="mb-4">
+                                <InputLabel for="name" value="Name" />
+                                <TextInput
                                     id="name"
                                     type="text"
                                     class="mt-1 block w-full"
                                     v-model="form.name"
                                     required
-                                /&gt;
-                                &lt;InputError :message="form.errors.name" class="mt-2" /&gt;
-                            &lt;/div&gt;
+                                />
+                                <InputError :message="form.errors.name" class="mt-2" />
+                            </div>
 
-                            &lt;div class="flex items-center justify-end mt-4"&gt;
-                                &lt;PrimaryButton :disabled="form.processing"&gt;Update Location&lt;/PrimaryButton&gt;
-                            &lt;/div&gt;
-                        &lt;/form&gt;
-                    &lt;/div&gt;
-                &lt;/div&gt;
-            &lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/AuthenticatedLayout&gt;
-&lt;/template&gt;
+                            <div class="flex items-center justify-end mt-4">
+                                <PrimaryButton :disabled="form.processing">Update Location</PrimaryButton>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>

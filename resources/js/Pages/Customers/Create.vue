@@ -83,8 +83,7 @@ const submit = () => {
     form.post(route('customers.store'));
 };
 
-onMounted(async () => {
-    const response = await fetch('/api/staff');
+onMounted(async () => {    const response = await fetch('/staff-list');
     staffList.value = await response.json();
 });
 </script>

@@ -77,14 +77,14 @@ const fetchSupplierData = async () => {
 
         // Fetch both supplier data and existing payments for the period
         const [suppliersResponse, paymentsResponse] = await Promise.all([
-            axios.get('/api/supplier-payments/get-suppliers', {
+            axios.get('/supplier-payments/get-suppliers', {
                 params: {
                     staff_id: selectedStaff.value,
                     from_date: formatToLocalDate(fromDate),
                     to_date: formatToLocalDate(toDate)
                 }
             }),
-            axios.get('/api/supplier-payments/get-existing-payments', {
+            axios.get('/supplier-payments/get-existing-payments', {
                 params: {
                     staff_id: selectedStaff.value,
                     from_date: formatToLocalDate(fromDate),
@@ -133,7 +133,7 @@ const savePayments = async () => {
                    String(d.getDate()).padStart(2, '0');
         };
 
-        await axios.post('/api/supplier-payments/store', {
+        await axios.post('/supplier-payments/store', {
             payment_date: formatToLocalDate(paymentDate.value),            suppliers: suppliers.value.map(supplier => {
                 const data = {
                     id: supplier.id,

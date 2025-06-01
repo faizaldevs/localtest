@@ -51,6 +51,11 @@ class Staff extends Model
         return $this->hasMany(Customer::class);
     }
 
+    public function productSales(): HasMany
+    {
+        return $this->hasMany(ProductSale::class);
+    }
+
     public function getTotalProductsAttribute()
     {
         $collectionsTotal = $this->productCollections()->sum('quantity');
