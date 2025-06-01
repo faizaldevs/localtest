@@ -39,11 +39,18 @@ class SupplierPaymentController extends Controller
             ->map(function ($supplier) use ($fromDate, $toDate) {
                 $collections = $supplier->productCollections;
                 
-                // Calculate total previous payments
+                // Calculate total previous payments for the period
                 $totalPreviousPayments = SupplierPayment::where('supplier_id', $supplier->id)
                     ->whereDate('period_from', '>=', $fromDate->format('Y-m-d'))
                     ->whereDate('period_to', '<=', $toDate->format('Y-m-d'))
                     ->sum('amount_paid');
+
+                // Calculate lifetime dues
+                $lifetimeCollections = \App\Models\ProductCollection::where('supplier_id', $supplier->id)
+                    ->sum('total');
+                $lifetimePayments = SupplierPayment::where('supplier_id', $supplier->id)
+                    ->sum('amount_paid');
+                $lifetimeDues = $lifetimeCollections - $lifetimePayments;
                 
                 return [
                     'id' => $supplier->id,
@@ -51,7 +58,8 @@ class SupplierPaymentController extends Controller
                     'daily_quantities' => $collections->pluck('quantity', 'date'),
                     'total_quantity' => $collections->sum('quantity'),
                     'total_amount' => $collections->sum('total'),
-                    'total_previous_payments' => $totalPreviousPayments
+                    'total_previous_payments' => $totalPreviousPayments,
+                    'lifetime_dues' => $lifetimeDues
                 ];
             });
 
@@ -122,18 +130,44 @@ class SupplierPaymentController extends Controller
                     'notes' => $supplierData['notes'],
                     'loan_deduction' => $supplierData['loan_deduction'],
                     'amount_paid' => $supplierData['payment_amount'] - $supplierData['loan_deduction']
-                ];                // Always create new payment records
-                $payment = SupplierPayment::create($paymentData);
+                ];
 
-                // Create staff discrepancy record if there's a staff deduction
+                // Check for existing payment
+                $existingPayment = SupplierPayment::where('supplier_id', $supplierData['id'])
+                    ->whereDate('period_from', $periodFrom)
+                    ->whereDate('period_to', $periodTo)
+                    ->first();
+
+                if ($existingPayment) {
+                    // Update existing payment
+                    $existingPayment->update($paymentData);
+                    $payment = $existingPayment;
+                } else {
+                    // Create new payment
+                    $payment = SupplierPayment::create($paymentData);
+                }
+
+                // Handle staff discrepancy
                 if ($supplierData['staff_deduction'] > 0) {
-                    \App\Models\StaffDiscrepancy::create([
-                        'staff_id' => $supplierData['staff_id'],
-                        'supplier_payment_id' => $payment->id,
-                        'discrepancy_amount' => $supplierData['staff_deduction'],
-                        'notes' => $supplierData['staff_notes'],
-                        'status' => 'pending'
-                    ]);
+                    // Check for existing staff discrepancy
+                    $existingDiscrepancy = \App\Models\StaffDiscrepancy::where('supplier_payment_id', $payment->id)->first();
+                    
+                    if ($existingDiscrepancy) {
+                        $existingDiscrepancy->update([
+                            'staff_id' => $supplierData['staff_id'],
+                            'discrepancy_amount' => $supplierData['staff_deduction'],
+                            'notes' => $supplierData['staff_notes'],
+                            'status' => 'pending'
+                        ]);
+                    } else {
+                        \App\Models\StaffDiscrepancy::create([
+                            'staff_id' => $supplierData['staff_id'],
+                            'supplier_payment_id' => $payment->id,
+                            'discrepancy_amount' => $supplierData['staff_deduction'],
+                            'notes' => $supplierData['staff_notes'],
+                            'status' => 'pending'
+                        ]);
+                    }
                 }
             }
         }
