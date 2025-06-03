@@ -106,6 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff-payments/get-staff-data', [StaffPaymentController::class, 'getStaffPaymentData'])->name('staff-payments.get-staff-data');
     Route::resource('staff-payments', StaffPaymentController::class);
     
+    // Staff Cash Transfers Routes
+    Route::resource('staff-cash-transfers', \App\Http\Controllers\StaffCashTransferController::class);
+    
     // Counter Sales Routes
     Route::get('/counter-sales', [CounterSaleController::class, 'index'])->name('counter-sales.index');
     Route::get('/counter-sales/create', [CounterSaleController::class, 'create'])->name('counter-sales.create');
