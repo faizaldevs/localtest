@@ -5,6 +5,8 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ProductTransferController;
 use App\Http\Controllers\ProductSaleController;
 use App\Http\Controllers\SupplierPaymentController;
+use App\Http\Controllers\SupplierLoanController;
+use App\Http\Controllers\StaffLoanController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Models\Staff;
@@ -45,6 +47,7 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('locations', \App\Http\Controllers\LocationController::class);
+    Route::resource('staff-loans', StaffLoanController::class);
 });
 
 Route::middleware('auth')->group(function () {
@@ -84,8 +87,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Customer Payments Routes
     Route::get('/customer-payments/create', [CustomerPaymentController::class, 'create'])->name('customer-payments.create');
-    Route::get('/api/customer-payments/get-customers', [CustomerPaymentController::class, 'getCustomers'])->name('customer-payments.get-customers');
-    Route::get('/api/customer-payments/get-existing-payments', [CustomerPaymentController::class, 'getExistingPayments'])->name('customer-payments.get-existing-payments');
+    Route::get('/customer-payments/get-customers', [CustomerPaymentController::class, 'getCustomers'])->name('customer-payments.get-customers');
+    Route::get('/customer-payments/get-existing-payments', [CustomerPaymentController::class, 'getExistingPayments'])->name('customer-payments.get-existing-payments');
     Route::post('/api/customer-payments/store', [CustomerPaymentController::class, 'store'])->name('customer-payments.store');
 
     // Customer Prepaid Payments Routes
@@ -93,6 +96,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/staff/{staffId}/customers-with-prepaid', [CustomerPaymentController::class, 'getCustomersWithPrepaid']);
     Route::post('/api/customer-prepaid-payments/store', [CustomerPaymentController::class, 'storePrepaid'])->name('customer-prepaid-payments.store');
 
+    // Supplier Loans Routes
+    Route::resource('supplier-loans', SupplierLoanController::class);
+    Route::resource('staff-loans', StaffLoanController::class);
 });
 
 require __DIR__.'/auth.php';
