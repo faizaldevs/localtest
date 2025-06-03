@@ -27,7 +27,6 @@
                                 <th class="py-3 px-6 text-left">Name</th>
                                 <th class="py-3 px-6 text-left">Phone</th>
                                 <th class="py-3 px-6 text-left">Location</th>
-                                <th class="py-3 px-6 text-right">Total Quantity</th>
                                 <th class="py-3 px-6 text-right">Salary</th>
                                 <th class="py-3 px-6 text-center">Actions</th>
                             </tr>
@@ -37,7 +36,6 @@
                                 <td class="py-3 px-6 text-left">{{ member.name }}</td>
                                 <td class="py-3 px-6 text-left">{{ member.phone }}</td>
                                 <td class="py-3 px-6 text-left">{{ member.location?.name }}</td>
-                                <td class="py-3 px-6 text-right">{{ formatNumber(member.total_products) }}</td>
                                 <td class="py-3 px-6 text-right">{{ member.salary ? formatCurrency(member.salary) : 'N/A' }}</td>
                                 <td class="py-3 px-6 text-center">
                                     <div class="flex item-center justify-center">

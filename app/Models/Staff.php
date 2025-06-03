@@ -19,8 +19,6 @@ class Staff extends Model
         'salary'
     ];
 
-    protected $appends = ['total_products'];
-
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
@@ -74,14 +72,5 @@ class Staff extends Model
     public function cashTransfers(): HasMany
     {
         return $this->hasMany(StaffCashTransfer::class);
-    }
-
-    public function getTotalProductsAttribute()
-    {
-        $collectionsTotal = $this->productCollections()->sum('quantity');
-        $receivedTotal = $this->productsReceived()->sum('quantity');
-        $sentTotal = $this->productsSent()->sum('quantity');
-        
-        return $collectionsTotal + $receivedTotal - $sentTotal;
     }
 }
