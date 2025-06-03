@@ -238,10 +238,11 @@ const savePayments = async () => {
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                                 <th v-for="date in uniqueDates" :key="date" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {{ new Date(date).toLocaleDateString() }}
-                                </th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Dues</th>
+                                </th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Dues</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Loans</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Repayments</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Balance</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Deduction</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier Payment Notes</th>
@@ -262,9 +263,17 @@ const savePayments = async () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ formatCurrency(supplier.total_amount) }}
+                                </td>                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ formatCurrency(supplier.lifetime_dues) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ formatCurrency(supplier.lifetime_dues) }}
+                                    {{ formatCurrency(supplier.total_loans_given) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ formatCurrency(supplier.total_loan_repayments) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ formatCurrency(supplier.total_loans_given - supplier.total_loan_repayments) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <TextInput
@@ -302,15 +311,17 @@ const savePayments = async () => {
                                     />
                                 </td>
                             </tr>
-                        </tbody>
-                        <tfoot>
+                        </tbody>                        <tfoot>
                             <tr class="bg-gray-50 font-semibold">
                                 <td class="px-6 py-4 whitespace-nowrap">Totals</td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
                                     {{ suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
+                                </td>                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">-</td>
+                                <td class="px-6 py-4 whitespace-nowrap">-</td>
+                                <td class="px-6 py-4 whitespace-nowrap">-</td>
+                                <td class="px-6 py-4 whitespace-nowrap">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.deduction) }}</td>
                                 <td></td>

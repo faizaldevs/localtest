@@ -43,14 +43,18 @@ class SupplierPaymentController extends Controller
                 $totalPreviousPayments = SupplierPayment::where('supplier_id', $supplier->id)
                     ->whereDate('period_from', '>=', $fromDate->format('Y-m-d'))
                     ->whereDate('period_to', '<=', $toDate->format('Y-m-d'))
-                    ->sum('amount_paid');
-
-                // Calculate lifetime dues
+                    ->sum('amount_paid');                // Calculate lifetime dues
                 $lifetimeCollections = \App\Models\ProductCollection::where('supplier_id', $supplier->id)
                     ->sum('total');
                 $lifetimePayments = SupplierPayment::where('supplier_id', $supplier->id)
                     ->sum('amount_paid');
                 $lifetimeDues = $lifetimeCollections - $lifetimePayments;
+                
+                // Calculate loan totals
+                $totalLoansGiven = \App\Models\SupplierLoan::where('supplier_id', $supplier->id)
+                    ->sum('amount');
+                $totalLoanRepayments = SupplierPayment::where('supplier_id', $supplier->id)
+                    ->sum('loan_deduction');
                 
                 return [
                     'id' => $supplier->id,
@@ -59,7 +63,9 @@ class SupplierPaymentController extends Controller
                     'total_quantity' => $collections->sum('quantity'),
                     'total_amount' => $collections->sum('total'),
                     'total_previous_payments' => $totalPreviousPayments,
-                    'lifetime_dues' => $lifetimeDues
+                    'lifetime_dues' => $lifetimeDues,
+                    'total_loans_given' => $totalLoansGiven,
+                    'total_loan_repayments' => $totalLoanRepayments
                 ];
             });
 
