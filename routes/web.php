@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductTransferController;
 use App\Http\Controllers\ProductSaleController;
 use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\SupplierLoanController;
+use App\Http\Controllers\CounterSaleController;
 use App\Http\Controllers\StaffLoanController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
@@ -99,6 +100,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Supplier Loans Routes
     Route::resource('supplier-loans', SupplierLoanController::class);
     Route::resource('staff-loans', StaffLoanController::class);
+    
+    // Counter Sales Routes
+    Route::get('/counter-sales', [CounterSaleController::class, 'index'])->name('counter-sales.index');
+    Route::get('/counter-sales/create', [CounterSaleController::class, 'create'])->name('counter-sales.create');
+    Route::post('/counter-sales', [CounterSaleController::class, 'store'])->name('counter-sales.store');
+    Route::get('/counter-sales/{sale}', [CounterSaleController::class, 'show'])->name('counter-sales.show');
 });
 
 require __DIR__.'/auth.php';

@@ -13,6 +13,7 @@ class ProductSale extends Model
     protected $fillable = [
         'customer_id',
         'staff_id',
+        'location_id',
         'product_id',
         'date',
         'quantity',
@@ -42,5 +43,10 @@ class ProductSale extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 }
