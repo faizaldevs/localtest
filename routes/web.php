@@ -8,6 +8,7 @@ use App\Http\Controllers\SupplierPaymentController;
 use App\Http\Controllers\SupplierLoanController;
 use App\Http\Controllers\CounterSaleController;
 use App\Http\Controllers\StaffLoanController;
+use App\Http\Controllers\StaffPaymentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Models\Staff;
@@ -100,6 +101,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Supplier Loans Routes
     Route::resource('supplier-loans', SupplierLoanController::class);
     Route::resource('staff-loans', StaffLoanController::class);
+    
+    // Staff Payments Routes
+    Route::get('/staff-payments/get-staff-data', [StaffPaymentController::class, 'getStaffPaymentData'])->name('staff-payments.get-staff-data');
+    Route::resource('staff-payments', StaffPaymentController::class);
     
     // Counter Sales Routes
     Route::get('/counter-sales', [CounterSaleController::class, 'index'])->name('counter-sales.index');
