@@ -233,10 +233,9 @@ const savePayments = async () => {
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">                    <table v-if="suppliers.length" class="min-w-full divide-y divide-gray-200">
-                        <thead>
+                <div class="overflow-auto max-h-[600px] border border-gray-200 rounded-lg">                    <table v-if="suppliers.length" class="min-w-full divide-y divide-gray-200">                        <thead class="sticky top-0 z-20">
                             <tr>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider supplier-column border-r border-gray-200">Supplier</th>
                                 <th v-for="date in uniqueDates" :key="date" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {{ new Date(date).toLocaleDateString() }}
                                 </th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
@@ -250,10 +249,9 @@ const savePayments = async () => {
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Deduction</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Notes</th>
                             </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        </thead>                        <tbody class="bg-white divide-y divide-gray-200">
                             <tr v-for="supplier in suppliers" :key="supplier.id">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap supplier-column border-r border-gray-200">
                                     {{ supplier.name }}
                                 </td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
@@ -321,7 +319,7 @@ const savePayments = async () => {
                             </tr>
                         </tbody>                        <tfoot>
                             <tr class="bg-gray-50 font-semibold">
-                                <td class="px-6 py-4 whitespace-nowrap">Totals</td>
+                                <td class="px-6 py-4 whitespace-nowrap supplier-column border-r border-gray-200">Totals</td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
                                     {{ suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0) }}
                                 </td>                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
@@ -374,5 +372,32 @@ const savePayments = async () => {
 
 .dp__main {
     width: 100% !important;
+}
+
+/* Ensure sticky positioning works properly */
+table thead th {
+    position: sticky;
+    top: 0;
+    background-color: rgb(249 250 251);
+}
+
+table thead th.supplier-column {
+    position: sticky;
+    left: 0;
+    z-index: 31;
+}
+
+table tbody td.supplier-column {
+    position: sticky;
+    left: 0;
+    background-color: white;
+    z-index: 30;
+}
+
+table tfoot td.supplier-column {
+    position: sticky;
+    left: 0;
+    background-color: rgb(249 250 251);
+    z-index: 30;
 }
 </style>
