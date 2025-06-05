@@ -9,11 +9,22 @@ use Inertia\Inertia;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::with('staff')->paginate(10);
+        $query = Supplier::with('staff');
+        
+        // Filter by staff if provided
+        if ($request->filled('staff_id')) {
+            $query->where('staff_id', $request->staff_id);
+        }
+        
+        $suppliers = $query->paginate(10)->withQueryString();
+        $staff = Staff::all();
+        
         return Inertia::render('Suppliers/Index', [
-            'suppliers' => $suppliers
+            'suppliers' => $suppliers,
+            'staff' => $staff,
+            'filters' => $request->only(['staff_id'])
         ]);
     }
 
