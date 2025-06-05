@@ -52,11 +52,31 @@ const uniqueDates = computed(() => {
 
 const totals = computed(() => {
     return customers.value.reduce((acc, customer) => ({
+        periodQuantity: acc.periodQuantity + Number(customer.period_quantity || 0),
+        periodAmount: acc.periodAmount + Number(customer.period_amount || 0),
+        periodPayments: acc.periodPayments + Number(customer.period_payments || 0),
+        lifetimeQuantity: acc.lifetimeQuantity + Number(customer.lifetime_quantity || 0),
+        lifetimeAmount: acc.lifetimeAmount + Number(customer.lifetime_amount || 0),
+        lifetimePayments: acc.lifetimePayments + Number(customer.lifetime_payments || 0),
+        netDue: acc.netDue + Number(customer.net_due || 0),
+        payment: acc.payment + Number(customer.payment_amount || 0),
+        // Keep for backward compatibility
         quantity: acc.quantity + Number(customer.total_quantity || 0),
         amount: acc.amount + Number(customer.total_amount || 0),
-        previousPayments: acc.previousPayments + Number(customer.total_previous_payments || 0),
-        payment: acc.payment + Number(customer.payment_amount || 0)
-    }), { quantity: 0, amount: 0, previousPayments: 0, payment: 0 });
+        previousPayments: acc.previousPayments + Number(customer.total_previous_payments || 0)
+    }), { 
+        periodQuantity: 0, 
+        periodAmount: 0, 
+        periodPayments: 0, 
+        lifetimeQuantity: 0, 
+        lifetimeAmount: 0, 
+        lifetimePayments: 0, 
+        netDue: 0, 
+        payment: 0,
+        quantity: 0, 
+        amount: 0, 
+        previousPayments: 0 
+    });
 });
 
 const fetchCustomerData = async () => {
@@ -231,9 +251,12 @@ const savePayments = async () => {
                                 <th v-for="date in uniqueDates" :key="date" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {{ new Date(date).toLocaleDateString() }}
                                 </th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous Payments</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lifetime Qty</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period Amount</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period Paid</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lifetime Paid</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Due</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
@@ -248,13 +271,22 @@ const savePayments = async () => {
                                     {{ customer.daily_quantities[date] || '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ customer.total_quantity }}
+                                    {{ customer.period_quantity }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ formatCurrency(customer.total_amount) }}
+                                    {{ customer.lifetime_quantity }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ formatCurrency(customer.period_amount) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
-                                    {{ formatCurrency(customer.total_previous_payments || 0) }}
+                                    {{ formatCurrency(customer.period_payments || 0) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                                    {{ formatCurrency(customer.lifetime_payments || 0) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap font-medium" :class="customer.net_due > 0 ? 'text-red-600' : 'text-green-600'">
+                                    {{ formatCurrency(customer.net_due || 0) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <TextInput
@@ -288,9 +320,12 @@ const savePayments = async () => {
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
                                     {{ customers.reduce((sum, customer) => sum + Number(customer.daily_quantities[date] || 0), 0) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.previousPayments) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.periodQuantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.lifetimeQuantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.periodAmount) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.periodPayments) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.lifetimePayments) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap font-medium" :class="totals.netDue > 0 ? 'text-red-600' : 'text-green-600'">{{ formatCurrency(totals.netDue) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>
                                 <td></td>
                                 <td></td>

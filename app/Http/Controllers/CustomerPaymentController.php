@@ -42,23 +42,41 @@ class CustomerPaymentController extends Controller
                 $query->whereDate('date', '>=', $fromDate->format('Y-m-d'))
                       ->whereDate('date', '<=', $toDate->format('Y-m-d'));
             }])
-            ->get()
-            ->map(function ($customer) use ($fromDate, $toDate) {
+            ->get()            ->map(function ($customer) use ($fromDate, $toDate) {
                 $sales = $customer->productSales;
                 
-                // Calculate total previous payments
-                $totalPreviousPayments = CustomerPayment::where('customer_id', $customer->id)
+                // Calculate payments for this period
+                $periodPayments = CustomerPayment::where('customer_id', $customer->id)
                     ->whereDate('period_from', '>=', $fromDate->format('Y-m-d'))
                     ->whereDate('period_to', '<=', $toDate->format('Y-m-d'))
                     ->sum('paid_amount');
+                
+                // Calculate lifetime totals
+                $lifetimeQuantity = \App\Models\ProductSale::where('customer_id', $customer->id)
+                    ->sum('quantity');
+                $lifetimeAmount = \App\Models\ProductSale::where('customer_id', $customer->id)
+                    ->sum('total');
+                $lifetimePayments = CustomerPayment::where('customer_id', $customer->id)
+                    ->sum('paid_amount');
+                
+                // Calculate net due (lifetime amount minus lifetime payments)
+                $netDue = $lifetimeAmount - $lifetimePayments;
                 
                 return [
                     'id' => $customer->id,
                     'name' => $customer->name,
                     'daily_quantities' => $sales->pluck('quantity', 'date'),
+                    'period_quantity' => $sales->sum('quantity'),
+                    'period_amount' => $sales->sum('total'),
+                    'period_payments' => $periodPayments,
+                    'lifetime_quantity' => $lifetimeQuantity,
+                    'lifetime_amount' => $lifetimeAmount,
+                    'lifetime_payments' => $lifetimePayments,
+                    'net_due' => $netDue,
+                    // Keep for backward compatibility
                     'total_quantity' => $sales->sum('quantity'),
                     'total_amount' => $sales->sum('total'),
-                    'total_previous_payments' => $totalPreviousPayments
+                    'total_previous_payments' => $periodPayments
                 ];
             });
 
