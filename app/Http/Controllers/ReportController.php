@@ -7,6 +7,9 @@ use App\Models\Product;
 use App\Models\ProductCollection;
 use App\Models\ProductSale;
 use App\Models\ProductTransfer;
+use App\Models\StaffLoan;
+use App\Models\StaffPayment;
+use App\Models\StaffDiscrepancy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -115,7 +118,9 @@ class ReportController extends Controller
             $collectedQty = $collectedRecord ? (float)$collectedRecord->quantity : 0.000;
             $soldQty = $soldRecord ? (float)$soldRecord->quantity : 0.000;
             $transferredQty = $transferredRecord ? (float)$transferredRecord->quantity : 0.000;
-            $receivedQty = $receivedRecord ? (float)$receivedRecord->quantity : 0.000;            // Only add rows where there is at least one non-zero quantity
+            $receivedQty = $receivedRecord ? (float)$receivedRecord->quantity : 0.000;
+
+            // Only add rows where there is at least one non-zero quantity
             if ($collectedQty > 0 || $soldQty > 0 || $transferredQty > 0 || $receivedQty > 0) {
                 $reportData[] = [
                     'date' => $date,
@@ -175,6 +180,73 @@ class ReportController extends Controller
                 'sales_summary' => [
                     'data' => $salesSummary,
                     'totals' => $summaryTotals
+                ]
+            ]
+        ]);
+    }
+
+    public function staffPayment()
+    {
+        return Inertia::render('Reports/StaffPayment', [
+            'staff' => Staff::select('id', 'name')->get()
+        ]);
+    }
+
+    public function generateStaffPaymentReport(Request $request)
+    {
+        $request->validate([
+            'staff_id' => 'required|exists:staff,id',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date'
+        ]);
+
+        $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate = Carbon::parse($request->to_date)->endOfDay();
+        $staff = Staff::findOrFail($request->staff_id);
+
+        // Get loan dues
+        $loanDues = StaffLoan::where('staff_id', $staff->id)
+            ->sum('amount');
+        $loanRepayments = StaffPayment::where('staff_id', $staff->id)
+            ->sum('loan_deduction');
+        $totalLoanDues = $loanDues - $loanRepayments;
+
+        // Get undeducted discrepancies
+        $undeductedDiscrepancies = StaffDiscrepancy::where('staff_id', $staff->id)
+            ->where('status', 'pending')
+            ->sum('discrepancy_amount');
+
+        // Get payment records for the period
+        $payments = StaffPayment::where('staff_id', $staff->id)
+            ->whereBetween('payment_date', [$fromDate, $toDate])
+            ->orderBy('payment_date')
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'date' => $payment->payment_date->format('M d, Y'),
+                    'loan_amount' => $payment->loan_deduction,
+                    'loan_deduction' => $payment->loan_deduction,
+                    'undeducted_discrepancy' => 0, // This is shown in section 1
+                    'deducted_discrepancy' => $payment->discrepancy_deduction,
+                    'net_amount_paid' => $payment->net_amount_paid,
+                    'base_amount' => $payment->base_amount,
+                    'bonus_amount' => $payment->bonus_amount,
+                    'note' => $payment->notes
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'staff' => $staff,
+                'from_date' => $fromDate->format('M d, Y'),
+                'to_date' => $toDate->format('M d, Y'),
+                'section_one' => [
+                    'loan_dues' => $totalLoanDues,
+                    'undeducted_discrepancies' => $undeductedDiscrepancies
+                ],
+                'section_two' => [
+                    'payments' => $payments
                 ]
             ]
         ]);

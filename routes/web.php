@@ -106,18 +106,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff-payments/get-staff-data', [StaffPaymentController::class, 'getStaffPaymentData'])->name('staff-payments.get-staff-data');
     Route::resource('staff-payments', StaffPaymentController::class);
     
-    // Staff Cash Transfers Routes
-    Route::resource('staff-cash-transfers', \App\Http\Controllers\StaffCashTransferController::class);
-    
     // Counter Sales Routes
-    Route::get('/counter-sales', [CounterSaleController::class, 'index'])->name('counter-sales.index');
-    Route::get('/counter-sales/create', [CounterSaleController::class, 'create'])->name('counter-sales.create');
-    Route::post('/counter-sales', [CounterSaleController::class, 'store'])->name('counter-sales.store');
-    Route::get('/counter-sales/{sale}', [CounterSaleController::class, 'show'])->name('counter-sales.show');
-    
+    Route::resource('counter-sales', CounterSaleController::class);
+
+    // Staff Cash Transfer Routes
+    Route::resource('staff-cash-transfers', \App\Http\Controllers\StaffCashTransferController::class);
+
     // Reports Routes
+    Route::get('/reports/staff-payment', [\App\Http\Controllers\ReportController::class, 'staffPayment'])->name('reports.staff-payment');
+    Route::post('/reports/staff-payment/generate', [\App\Http\Controllers\ReportController::class, 'generateStaffPaymentReport'])->name('reports.staff-payment.generate');
     Route::get('/reports/staff-product', [\App\Http\Controllers\ReportController::class, 'staffProduct'])->name('reports.staff-product');
     Route::post('/reports/staff-product/generate', [\App\Http\Controllers\ReportController::class, 'generateStaffProductReport'])->name('reports.staff-product.generate');
+
+    // Staff Payment Routes
 });
 
 require __DIR__.'/auth.php';

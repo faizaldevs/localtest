@@ -7,7 +7,7 @@ import { Link } from '@inertiajs/vue3';
 
 const showingSidebar = ref(true);
 
-const navigation = [
+const menuItemsData = [
     { name: 'Dashboard', href: route('dashboard'), icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { name: 'Customers', href: route('customers.index'), icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { name: 'Staff', href: route('staff.index'), icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
@@ -24,10 +24,23 @@ const navigation = [
     { name: 'Supplier Payments', href: route('supplier-payments.create'), icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
     { name: 'Customer Payments (Postpaid / Cash)', href: route('customer-payments.create'), icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
     { name: 'Customer Prepaid Payments', href: route('customer-prepaid-payments.create'), icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-    { name: 'Reports', href: route('reports.staff-product'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { 
+        name: 'Reports',
+        children: [
+            { name: 'Staff Product Report', href: route('reports.staff-product'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+            { name: 'Staff Payment Report', href: route('reports.staff-payment'), icon: 'M9 7h6m0 10v4m3-4v4m3-4v4M9 17v4m0-11V7m0 0L3 7m6 0 6-6 6 6h-6z' },
+        ]
+    },
     { name: 'Locations', href: route('locations.index'), icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
     { name: 'Profile', href: route('profile.edit'), icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
 ];
+
+const navigation = ref(menuItemsData.map(item => {
+    if (item.children) {
+        return { ...item, expanded: false };
+    }
+    return item;
+}));
 
 const toggleSidebar = () => {
     showingSidebar.value = !showingSidebar.value;
@@ -78,28 +91,77 @@ const toggleSidebar = () => {
 
                 <!-- Navigation -->
                 <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-                    <Link
-                        v-for="item in navigation"
-                        :key="item.name"
-                        :href="item.href"
-                        :class="[
-                            route().current(item.href)
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                            'group flex items-center px-3 py-2 text-sm font-medium rounded-md'
-                        ]"
-                    >
-                        <svg
-                            class="text-gray-500 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                    <template v-for="item in navigation" :key="item.name">
+                        <!-- Regular menu item -->
+                        <Link
+                            v-if="!item.children"
+                            :href="item.href"
+                            :class="[
+                                route().current(item.href)
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                'group flex items-center px-3 py-2 text-sm font-medium rounded-md'
+                            ]"
                         >
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
-                        </svg>
-                        {{ item.name }}
-                    </Link>
+                            <svg
+                                v-if="item.icon"
+                                class="text-gray-500 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                            </svg>
+                            {{ item.name }}
+                        </Link>
+
+                        <!-- Menu item with children -->
+                        <div v-else class="space-y-1">
+                            <button
+                                class="w-full group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                @click="item.expanded = !item.expanded"
+                            >
+                                <svg
+                                    class="text-gray-500 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6 transform transition-transform"
+                                    :class="{ 'rotate-90': item.expanded }"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                                {{ item.name }}
+                            </button>
+
+                            <div v-show="item.expanded" class="ml-4">
+                                <Link
+                                    v-for="child in item.children"
+                                    :key="child.name"
+                                    :href="child.href"
+                                    :class="[
+                                        route().current(child.href)
+                                            ? 'bg-gray-100 text-gray-900'
+                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                        'group flex items-center px-3 py-2 text-sm font-medium rounded-md'
+                                    ]"
+                                >
+                                    <svg
+                                        v-if="child.icon"
+                                        class="text-gray-500 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="child.icon" />
+                                    </svg>
+                                    {{ child.name }}
+                                </Link>
+                            </div>
+                        </div>
+                    </template>
                 </nav>
             </div>
 
