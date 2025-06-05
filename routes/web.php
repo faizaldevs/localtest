@@ -114,6 +114,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/counter-sales/create', [CounterSaleController::class, 'create'])->name('counter-sales.create');
     Route::post('/counter-sales', [CounterSaleController::class, 'store'])->name('counter-sales.store');
     Route::get('/counter-sales/{sale}', [CounterSaleController::class, 'show'])->name('counter-sales.show');
+    
+    // Reports Routes
+    Route::get('/reports/staff-product', [\App\Http\Controllers\ReportController::class, 'staffProduct'])->name('reports.staff-product');
+    Route::post('/reports/staff-product/generate', [\App\Http\Controllers\ReportController::class, 'generateStaffProductReport'])->name('reports.staff-product.generate');
 });
 
 require __DIR__.'/auth.php';
