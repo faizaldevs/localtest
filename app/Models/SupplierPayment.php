@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SupplierPayment extends Model
 {
-    use HasFactory;
-
-    protected $fillable = [
+    use HasFactory;    protected $fillable = [
         'supplier_id',
         'period_from',
         'period_to',
@@ -20,10 +18,9 @@ class SupplierPayment extends Model
         'payment_date',
         'notes',
         'loan_deduction',
-        'amount_paid'
-    ];
-
-    protected $casts = [
+        'amount_paid',
+        'payment_adjustment'
+    ];    protected $casts = [
         'period_from' => 'date',
         'period_to' => 'date',
         'payment_date' => 'date',
@@ -32,7 +29,8 @@ class SupplierPayment extends Model
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'loan_deduction' => 'decimal:2',
-        'amount_paid' => 'decimal:2'
+        'amount_paid' => 'decimal:2',
+        'payment_adjustment' => 'decimal:2'
     ];
 
     public function supplier()

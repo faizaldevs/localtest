@@ -127,8 +127,15 @@
                             <option value="postpaid">Postpaid</option>
                           </select>
                         </td>
+                      </tr>                    </tbody>
+                    <tfoot class="bg-gray-100">
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">Total</td>
+                        <td class="px-6 py-4 whitespace-nowrap"></td>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ totalQuantity.toFixed(3) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap"></td>
                       </tr>
-                    </tbody>
+                    </tfoot>
                   </table>
                 </div>
               </div>
@@ -158,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -177,6 +184,13 @@ const form = useForm({
   product_id: '',
   staff_id: '',
   customer_details: [] // Array to hold multiple customer data
+});
+
+// Computed property for total quantity
+const totalQuantity = computed(() => {
+  return customers.value.reduce((sum, customer) => {
+    return sum + (parseFloat(customer.quantity) || 0);
+  }, 0);
 });
 
 const updateAllCustomerPrices = () => {

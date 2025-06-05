@@ -91,9 +91,7 @@ class SupplierPaymentController extends Controller
         return response()->json($payments);
     }    public function store(Request $request)
     {
-        \Log::info('Supplier Payment Request:', $request->all());
-
-        $request->validate([
+        \Log::info('Supplier Payment Request:', $request->all());        $request->validate([
             'payment_date' => 'required|date',
             'date_range' => 'required|array|size:2',
             'date_range.*' => 'required|date',
@@ -103,6 +101,7 @@ class SupplierPaymentController extends Controller
             'suppliers.*.payment_amount' => 'required|numeric|min:0',
             'suppliers.*.loan_deduction' => 'required|numeric|min:0',
             'suppliers.*.staff_deduction' => 'required|numeric|min:0',
+            'suppliers.*.payment_adjustment' => 'required|numeric',
             'suppliers.*.notes' => 'nullable|string',
             'suppliers.*.staff_notes' => 'nullable|string',
             'suppliers.*.payment_id' => 'present|nullable'
@@ -122,9 +121,7 @@ class SupplierPaymentController extends Controller
                 // Calculate weighted average cost
                 $totalQuantity = $collections->sum('quantity');
                 $totalAmount = $collections->sum('total');
-                $weightedAverageCost = $totalQuantity > 0 ? $totalAmount / $totalQuantity : 0;
-
-                $paymentData = [
+                $weightedAverageCost = $totalQuantity > 0 ? $totalAmount / $totalQuantity : 0;                $paymentData = [
                     'supplier_id' => $supplierData['id'],
                     'period_from' => $periodFrom,
                     'period_to' => $periodTo,
@@ -135,6 +132,7 @@ class SupplierPaymentController extends Controller
                     'payment_date' => $request->payment_date,
                     'notes' => $supplierData['notes'],
                     'loan_deduction' => $supplierData['loan_deduction'],
+                    'payment_adjustment' => $supplierData['payment_adjustment'] ?? 0.00,
                     'amount_paid' => $supplierData['payment_amount'] - $supplierData['loan_deduction']
                 ];
 

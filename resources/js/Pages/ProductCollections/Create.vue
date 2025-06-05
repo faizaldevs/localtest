@@ -115,6 +115,13 @@
                         </td>
                       </tr>
                     </tbody>
+                    <tfoot class="bg-gray-100">
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">Total</td>
+                        <td class="px-6 py-4 whitespace-nowrap"></td>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ totalQuantity.toFixed(3) }}</td>
+                      </tr>
+                    </tfoot>
                   </table>
                 </div>
               </div>
@@ -144,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -163,6 +170,19 @@ const form = useForm({
   product_id: '',
   staff_id: '',
   supplier_details: [] // Array to hold multiple supplier data
+});
+
+// Computed properties for totals
+const totalCost = computed(() => {
+  return suppliers.value.reduce((sum, supplier) => {
+    return sum + (parseFloat(supplier.cost) || 0);
+  }, 0);
+});
+
+const totalQuantity = computed(() => {
+  return suppliers.value.reduce((sum, supplier) => {
+    return sum + (parseFloat(supplier.quantity) || 0);
+  }, 0);
 });
 
 const updateAllSupplierCosts = () => {

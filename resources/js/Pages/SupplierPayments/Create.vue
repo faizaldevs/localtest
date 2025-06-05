@@ -55,8 +55,9 @@ const totals = computed(() => {
         quantity: acc.quantity + Number(supplier.total_quantity || 0),
         amount: acc.amount + Number(supplier.total_amount || 0),
         payment: acc.payment + Number(supplier.payment_amount || 0),
+        adjustment: acc.adjustment + Number(supplier.payment_adjustment || 0),
         deduction: acc.deduction + Number(supplier.loan_deduction || 0)
-    }), { quantity: 0, amount: 0, payment: 0, deduction: 0 });
+    }), { quantity: 0, amount: 0, payment: 0, adjustment: 0, deduction: 0 });
 });
 
 const fetchSupplierData = async () => {
@@ -103,10 +104,10 @@ const fetchSupplierData = async () => {
                     amount_paid: existingPayment.amount_paid,
                     loan_deduction: existingPayment.loan_deduction
                 });
-            }
-            return {
+            }            return {
                 ...supplier,
                 payment_amount: existingPayment ? Number(existingPayment.amount_paid) + Number(existingPayment.loan_deduction) : 0,
+                payment_adjustment: existingPayment ? Number(existingPayment.payment_adjustment || 0) : 0,
                 loan_deduction: existingPayment ? Number(existingPayment.loan_deduction) : 0,
                 notes: existingPayment ? existingPayment.notes : '',
                 payment_id: existingPayment ? existingPayment.id : null,
@@ -142,11 +143,11 @@ const savePayments = async () => {
         };
 
         await axios.post('/supplier-payments/store', {
-            payment_date: formatToLocalDate(paymentDate.value),            suppliers: suppliers.value.map(supplier => {
-                const data = {
+            payment_date: formatToLocalDate(paymentDate.value),            suppliers: suppliers.value.map(supplier => {                const data = {
                     id: supplier.id,
                     staff_id: selectedStaff.value,
                     payment_amount: supplier.payment_amount,
+                    payment_adjustment: supplier.payment_adjustment || 0,
                     loan_deduction: supplier.loan_deduction,
                     staff_deduction: supplier.staff_deduction,
                     notes: supplier.notes,
@@ -165,11 +166,11 @@ const savePayments = async () => {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                alert('Payments saved successfully');
-                // Reset form
+                alert('Payments saved successfully');                // Reset form
                 suppliers.value = suppliers.value.map(s => ({
                     ...s,
                     payment_amount: 0,
+                    payment_adjustment: 0,
                     loan_deduction: 0,
                     notes: '',
                     staff_deduction: 0,
@@ -242,8 +243,8 @@ const savePayments = async () => {
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Dues</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Loans</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Repayments</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Balance</th>
-                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Balance</th>                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Amount</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Adjustment</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Deduction</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier Payment Notes</th>
                                 <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Deduction</th>
@@ -274,12 +275,19 @@ const savePayments = async () => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ formatCurrency(supplier.total_loans_given - supplier.total_loan_repayments) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                </td>                                <td class="px-6 py-4 whitespace-nowrap">
                                     <TextInput
                                         v-model.number="supplier.payment_amount"
                                         type="number"
                                         class="w-32"
+                                    />
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <TextInput
+                                        v-model.number="supplier.payment_adjustment"
+                                        type="number"
+                                        class="w-32"
+                                        placeholder="0"
                                     />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -321,8 +329,8 @@ const savePayments = async () => {
                                 <td class="px-6 py-4 whitespace-nowrap">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap">-</td>
-                                <td class="px-6 py-4 whitespace-nowrap">-</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">-</td>                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.payment) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.adjustment) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.deduction) }}</td>
                                 <td></td>
                                 <td></td>
