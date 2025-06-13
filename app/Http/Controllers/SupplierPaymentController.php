@@ -8,6 +8,7 @@ use App\Models\SupplierPayment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class SupplierPaymentController extends Controller
 {
@@ -45,9 +46,9 @@ class SupplierPaymentController extends Controller
                     ->whereDate('period_to', '<=', $toDate->format('Y-m-d'))
                     ->sum('amount_paid');                // Calculate lifetime dues
                 $lifetimeCollections = \App\Models\ProductCollection::where('supplier_id', $supplier->id)
-                    ->sum('total');
+                    ->sum(DB::raw('CAST(total AS DECIMAL(10,2))')); // Ensure proper decimal handling
                 $lifetimePayments = SupplierPayment::where('supplier_id', $supplier->id)
-                    ->sum('amount_paid');
+                    ->sum(DB::raw('CAST(amount_paid AS DECIMAL(10,2))'));
                 $lifetimeDues = $lifetimeCollections - $lifetimePayments;
                 
                 // Calculate loan totals

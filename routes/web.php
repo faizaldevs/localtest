@@ -15,6 +15,8 @@ use App\Models\Staff;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SupplierReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +83,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Reports Routes
+    Route::get('/reports/supplier-product', [ReportController::class, 'supplierProduct'])->name('reports.supplier-product');
+    Route::post('/reports/supplier-product/generate', [ReportController::class, 'generateSupplierProductReport'])->name('reports.supplier-product.generate');
+
     // Supplier Payments Routes
     Route::get('/supplier-payments/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
     Route::get('/supplier-payments/get-suppliers', [SupplierPaymentController::class, 'getSuppliers'])->name('supplier-payments.get-suppliers');
@@ -117,8 +123,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/reports/staff-payment/generate', [\App\Http\Controllers\ReportController::class, 'generateStaffPaymentReport'])->name('reports.staff-payment.generate');
     Route::get('/reports/staff-product', [\App\Http\Controllers\ReportController::class, 'staffProduct'])->name('reports.staff-product');
     Route::post('/reports/staff-product/generate', [\App\Http\Controllers\ReportController::class, 'generateStaffProductReport'])->name('reports.staff-product.generate');
+    Route::get('/reports/supplier-product', [\App\Http\Controllers\ReportController::class, 'supplierProduct'])->name('reports.supplier-product');
+    Route::post('/reports/supplier-product/generate', [\App\Http\Controllers\ReportController::class, 'generateSupplierProductReport'])->name('reports.supplier-product.generate');
 
     // Staff Payment Routes
+    Route::get('supplier-reports', [SupplierReportController::class, 'show'])->name('supplier-reports.show');
 });
 
 require __DIR__.'/auth.php';

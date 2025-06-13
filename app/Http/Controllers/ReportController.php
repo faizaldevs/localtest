@@ -6,6 +6,7 @@ use App\Models\Staff;
 use App\Models\Product;
 use App\Models\ProductCollection;
 use App\Models\ProductSale;
+use App\Models\Supplier;
 use App\Models\ProductTransfer;
 use App\Models\StaffLoan;
 use App\Models\StaffPayment;
@@ -17,7 +18,71 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 
 class ReportController extends Controller
-{
+{    public function supplierProduct()
+    {
+        $suppliers = Supplier::select('id', 'name')->get();
+        $products = Product::select('id', 'name')->get();
+
+        return Inertia::render('Reports/SupplierProduct', [
+            'suppliers' => $suppliers,
+            'products' => $products
+        ]);
+    }
+
+    public function generateSupplierProductReport(Request $request)
+    {
+        $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'product_id' => 'required|exists:products,id',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date'
+        ]);
+
+        $supplier = Supplier::findOrFail($request->supplier_id);
+        $product = Product::findOrFail($request->product_id);
+          $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate = Carbon::parse($request->to_date)->endOfDay();
+        $fromDateStr = $fromDate->format('Y-m-d');
+        $toDateStr = $toDate->format('Y-m-d');
+
+        // Get collections for the supplier
+        $collections = DB::table('product_collections')
+            ->where('supplier_id', $supplier->id)
+            ->where('product_id', $request->product_id)
+            ->whereBetween('date', [$fromDateStr, $toDateStr])
+            ->select('date')
+            ->selectRaw('SUM(CAST(quantity AS DECIMAL(10,3))) as quantity')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $reportData = [];
+        $totalQuantity = 0;
+
+        // Prepare report data
+        foreach ($collections as $collection) {
+            $qty = (float)$collection->quantity;
+            $reportData[] = [
+                'date' => Carbon::parse($collection->date)->format('M d, Y'),
+                'quantity' => number_format($qty, 3, '.', ''),
+            ];
+            $totalQuantity += $qty;
+        }        return response()->json([
+            'success' => true,
+            'data' => [
+                'supplier' => [
+                    'name' => $supplier->name,
+                    'address' => $supplier->address,
+                    'phone' => $supplier->phone
+                ],
+                'product' => $product,
+                'from_date' => $fromDate->format('M d, Y'),
+                'to_date' => $toDate->format('M d, Y'),
+                'report_data' => $reportData,
+                'total_quantity' => number_format($totalQuantity, 3, '.', '')
+            ]
+        ]);
+    }
     public function staffProduct()
     {
         $staff = Staff::select('id', 'name')->get();
