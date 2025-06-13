@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierReportController;
+use App\Http\Controllers\CustomerReportController;
+use App\Http\Controllers\CustomerProductReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +88,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Reports Routes
     Route::get('/reports/supplier-product', [ReportController::class, 'supplierProduct'])->name('reports.supplier-product');
     Route::post('/reports/supplier-product/generate', [ReportController::class, 'generateSupplierProductReport'])->name('reports.supplier-product.generate');
+    Route::get('/reports/staff-product', [ReportController::class, 'staffProduct'])->name('reports.staff-product');
+    Route::post('/reports/staff-product/generate', [ReportController::class, 'generateStaffProductReport'])->name('reports.staff-product.generate');
+    Route::get('/reports/customer-product', [CustomerProductReportController::class, 'show'])->name('reports.customer-product');
+    Route::post('/reports/customer-product/generate', [CustomerProductReportController::class, 'generate'])->name('reports.customer-product.generate');
 
     // Supplier Payments Routes
     Route::get('/supplier-payments/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
@@ -128,6 +134,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Staff Payment Routes
     Route::get('supplier-reports', [SupplierReportController::class, 'show'])->name('supplier-reports.show');
+    Route::get('customer-reports', [CustomerReportController::class, 'show'])->name('customer-reports.show');
+
 });
 
 require __DIR__.'/auth.php';

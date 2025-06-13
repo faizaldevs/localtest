@@ -30,7 +30,9 @@ const menuItemsData = [
             { name: 'Staff Product Report', href: route('reports.staff-product'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
             { name: 'Staff Payment Report', href: route('reports.staff-payment'), icon: 'M9 7h6m0 10v4m3-4v4m3-4v4M9 17v4m0-11V7m0 0L3 7m6 0 6-6 6 6h-6z' },
             { name: 'Supplier Product Report', href: route('reports.supplier-product'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-            { name: 'Supplier Payment Report', href: route('supplier-reports.show'), icon: 'M9 7h6m0 10v4m3-4v4m3-4v4M9 17v4m0-11V7m0 0L3 7m6 0 6-6 6 6h-6z' }
+            { name: 'Supplier Payment Report', href: route('supplier-reports.show'), icon: 'M9 7h6m0 10v4m3-4v4m3-4v4M9 17v4m0-11V7m0 0L3 7m6 0 6-6 6 6h-6z' },
+            { name: 'Customer Payment Report', href: route('customer-reports.show'), icon: 'M9 7h6m0 10v4m3-4v4m3-4v4M9 17v4m0-11V7m0 0L3 7m6 0 6-6 6 6h-6z' },
+            { name: 'Customer Product Report', href: route('reports.customer-product'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' }
         ]
     },
     { name: 'Locations', href: route('locations.index'), icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
