@@ -18,6 +18,30 @@
                             </Link>
                         </div>
 
+                        <div class="mb-4 flex gap-4">
+                            <div class="flex-1">
+                                <input
+                                    v-model="search"
+                                    type="text"
+                                    placeholder="Search by name..."
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    @input="debouncedFilter"
+                                />
+                            </div>
+                            <div class="w-64">
+                                <select
+                                    v-model="selectedStaff"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    @change="filterCustomers"
+                                >
+                                    <option value="">All Staff</option>
+                                    <option v-for="staff in staffList" :key="staff.id" :value="staff.id">
+                                        {{ staff.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto">
                                 <thead>
@@ -56,10 +80,36 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
-    customers: Array
+    customers: Array,
+    staffList: Array,
+    filters: Object
 });
+
+const search = ref(props.filters?.search || '');
+const selectedStaff = ref(props.filters?.staff || '');
+let debounceTimeout;
+
+const debouncedFilter = () => {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+        filterCustomers();
+    }, 300);
+};
+
+const filterCustomers = () => {
+    router.get(
+        route('customers.index'),
+        { search: search.value, staff: selectedStaff.value },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        }
+    );
+};
 
 const deleteCustomer = (customer) => {
     if (confirm('Are you sure you want to delete this customer?')) {

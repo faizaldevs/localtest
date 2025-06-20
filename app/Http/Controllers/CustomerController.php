@@ -3,16 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::with('staff')->latest()->get();
+        $query = Customer::with('staff')->latest();
+
+        if ($request->search) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
+
+        if ($request->staff) {
+            $query->where('staff_id', $request->staff);
+        }
+
+        $customers = $query->get();
+
         return Inertia::render('Customers/Index', [
-            'customers' => $customers
+            'customers' => $customers,
+            'staffList' => Staff::select('id', 'name')->get(),
+            'filters' => $request->only(['search', 'staff'])
         ]);
     }
 
