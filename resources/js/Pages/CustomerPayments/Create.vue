@@ -23,8 +23,14 @@ document.head.appendChild(style);
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'INR'
+        currency: 'INR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     }).format(amount);
+};
+
+const formatNumber = (value, decimals = 3) => {
+    return Number(value || 0).toFixed(decimals);
 };
 
 const props = defineProps({
@@ -219,7 +225,7 @@ const savePayments = async () => {
                             <option value="">Select Staff</option>
                             <option v-for="s in staff" :key="s.id" :value="s.id">
                                 {{ s.name }}
-                            </option>
+                              </option>
                         </select>
                     </div>
                     
@@ -268,13 +274,13 @@ const savePayments = async () => {
                                     {{ customer.name }}
                                 </td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
-                                    {{ customer.daily_quantities[date] || '-' }}
+                                    {{ customer.daily_quantities[date] ? formatNumber(customer.daily_quantities[date]) : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ customer.period_quantity }}
+                                    {{ formatNumber(customer.period_quantity) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ customer.lifetime_quantity }}
+                                    {{ formatNumber(customer.lifetime_quantity) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ formatCurrency(customer.period_amount) }}
@@ -318,10 +324,10 @@ const savePayments = async () => {
                             <tr class="bg-gray-50 font-semibold">
                                 <td class="px-6 py-4 whitespace-nowrap customer-column border-r border-gray-200">Totals</td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
-                                    {{ customers.reduce((sum, customer) => sum + Number(customer.daily_quantities[date] || 0), 0) }}
+                                    {{ formatNumber(customers.reduce((sum, customer) => sum + Number(customer.daily_quantities[date] || 0), 0)) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.periodQuantity }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.lifetimeQuantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatNumber(totals.periodQuantity) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ formatNumber(totals.lifetimeQuantity) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.periodAmount) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.periodPayments) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.lifetimePayments) }}</td>

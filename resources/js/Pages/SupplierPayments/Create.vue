@@ -23,8 +23,14 @@ document.head.appendChild(style);
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'INR'
+        currency: 'INR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     }).format(amount);
+};
+
+const formatNumber = (value, decimals = 3) => {
+    return Number(value || 0).toFixed(decimals);
 };
 
 const props = defineProps({
@@ -255,10 +261,10 @@ const savePayments = async () => {
                                     {{ supplier.name }}
                                 </td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
-                                    {{ supplier.daily_quantities[date] || '-' }}
+                                    {{ supplier.daily_quantities[date] ? formatNumber(supplier.daily_quantities[date]) : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ supplier.total_quantity }}
+                                    {{ formatNumber(supplier.total_quantity) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ formatCurrency(supplier.total_amount) }}
@@ -321,8 +327,8 @@ const savePayments = async () => {
                             <tr class="bg-gray-50 font-semibold">
                                 <td class="px-6 py-4 whitespace-nowrap supplier-column border-r border-gray-200">Totals</td>
                                 <td v-for="date in uniqueDates" :key="date" class="px-6 py-4 whitespace-nowrap text-center">
-                                    {{ suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0) }}
-                                </td>                                <td class="px-6 py-4 whitespace-nowrap">{{ totals.quantity }}</td>
+                                    {{ formatNumber(suppliers.reduce((sum, supplier) => sum + Number(supplier.daily_quantities[date] || 0), 0)) }}
+                                </td>                                <td class="px-6 py-4 whitespace-nowrap">{{ formatNumber(totals.quantity) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(totals.amount) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">-</td>
                                 <td class="px-6 py-4 whitespace-nowrap">-</td>
