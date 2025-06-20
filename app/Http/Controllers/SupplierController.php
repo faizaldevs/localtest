@@ -17,6 +17,11 @@ class SupplierController extends Controller
         if ($request->filled('staff_id')) {
             $query->where('staff_id', $request->staff_id);
         }
+
+        // Search by name if provided
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
         
         $suppliers = $query->paginate(10)->withQueryString();
         $staff = Staff::all();
@@ -24,7 +29,7 @@ class SupplierController extends Controller
         return Inertia::render('Suppliers/Index', [
             'suppliers' => $suppliers,
             'staff' => $staff,
-            'filters' => $request->only(['staff_id'])
+            'filters' => $request->only(['staff_id', 'search'])
         ]);
     }
 

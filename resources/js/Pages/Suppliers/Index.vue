@@ -14,6 +14,18 @@
               Add Supplier
             </Link>
             
+            <!-- Name Search -->
+            <div class="min-w-0 flex-1 max-w-xs">
+              <label for="name-search" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+              <input
+                type="text"
+                id="name-search"
+                v-model="search"
+                placeholder="Search suppliers..."
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+            </div>
+
             <!-- Staff Filter -->
             <div class="min-w-0 flex-1 max-w-xs">
               <label for="staff-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Staff</label>
@@ -97,14 +109,35 @@ import Pagination from '@/Components/Pagination.vue';
 const props = defineProps({
   suppliers: Object,
   staff: Array,
-  filters: Object,
+  filters: {
+    type: Object,
+    default: () => ({
+      search: '',
+      staff_id: null,
+    }),
+  },
 });
 
+const search = ref(props.filters.search || '');
 const staffFilter = ref(props.filters.staff_id || '');
+
+let searchTimeout;
+
+watch(search, (value) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    router.get(
+      route('suppliers.index'),
+      { search: value, staff_id: staffFilter.value },
+      { preserveState: true, preserveScroll: true }
+    );
+  }, 300);
+});
 
 const filterByStaff = () => {
   router.get(route('suppliers.index'), {
-    staff_id: staffFilter.value
+    staff_id: staffFilter.value,
+    search: search.value
   }, {
     preserveState: true,
     replace: true
@@ -113,7 +146,9 @@ const filterByStaff = () => {
 
 const clearFilter = () => {
   staffFilter.value = '';
-  router.get(route('suppliers.index'), {}, {
+  router.get(route('suppliers.index'), {
+    search: search.value
+  }, {
     preserveState: true,
     replace: true
   });
