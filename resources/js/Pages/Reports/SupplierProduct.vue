@@ -9,7 +9,7 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
+                    <div class="p-6 min-h-[800px]">
                         <form @submit.prevent="generateReport" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">                                <div>
                                     <InputLabel value="Supplier" />
@@ -39,12 +39,12 @@
 
                                 <div>
                                     <InputLabel value="From Date" />
-                                    <Datepicker v-model="form.from_date" :enable-time-picker="false" class="mt-1" required />
+                                    <Datepicker v-model="form.from_date" :enable-time-picker="false" class="mt-1 [&_input]:z-50" required />
                                 </div>
 
                                 <div>
                                     <InputLabel value="To Date" />
-                                    <Datepicker v-model="form.to_date" :enable-time-picker="false" class="mt-1" required />
+                                    <Datepicker v-model="form.to_date" :enable-time-picker="false" class="mt-1 [&_input]:z-50" required />
                                 </div>
                             </div>
 
