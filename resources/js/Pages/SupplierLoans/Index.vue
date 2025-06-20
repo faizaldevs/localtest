@@ -9,13 +9,23 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center mb-6">
-                    <div class="flex-1">
+                    <div class="flex-1 flex items-center space-x-4">
                         <Link 
                             :href="route('supplier-loans.create')" 
                             class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                         >
                             Add Loan
                         </Link>
+                        <select
+                            v-model="filters.staff_id"
+                            @change="filterByStaff"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        >
+                            <option value="">All Staff</option>
+                            <option v-for="member in staff" :key="member.id" :value="member.id">
+                                {{ member.name }}
+                            </option>
+                        </select>
                     </div>
                 </div>
 
@@ -68,12 +78,25 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps({
-    loans: Object
+    loans: Object,
+    staff: Array,
+    filters: Object
 });
+
+const filters = ref(props.filters);
+
+const filterByStaff = () => {
+    router.get(
+        route('supplier-loans.index'),
+        { staff_id: filters.value.staff_id },
+        { preserveState: true, preserveScroll: true }
+    );
+};
 
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {

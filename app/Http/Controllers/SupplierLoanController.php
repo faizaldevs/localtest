@@ -9,14 +9,25 @@ use Inertia\Inertia;
 
 class SupplierLoanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $loans = SupplierLoan::with('supplier')
+        $loans = SupplierLoan::with(['supplier.staff', 'supplier'])
+            ->when($request->staff_id, function($query, $staffId) {
+                $query->whereHas('supplier', function($q) use ($staffId) {
+                    $q->where('staff_id', $staffId);
+                });
+            })
             ->latest()
             ->paginate(10);
 
+        $staff = \App\Models\Staff::all(['id', 'name']);
+
         return Inertia::render('SupplierLoans/Index', [
-            'loans' => $loans
+            'loans' => $loans,
+            'staff' => $staff,
+            'filters' => [
+                'staff_id' => $request->staff_id
+            ]
         ]);
     }
 
