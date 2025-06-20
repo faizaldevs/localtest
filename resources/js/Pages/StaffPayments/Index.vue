@@ -26,22 +26,18 @@ const deletePayment = (id) => {
 </script>
 
 <template>
-    <Head title="Staff Payments" />
-    <AuthenticatedLayout>
-        <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Staff Payments
-                </h2>
-                <Link :href="route('staff-payments.create')">
-                    <PrimaryButton>
-                        Create New Payment
-                    </PrimaryButton>
-                </Link>
-            </div>
-        </template>
+    <Head title="Staff Payments" />    <AuthenticatedLayout>
+        <div class="p-6 flex justify-between items-center border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Staff Payments</h2>
+            <Link 
+                :href="route('staff-payments.create')"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+            >
+                Create New Payment
+            </Link>
+        </div>
 
-        <div class="py-12">
+        <div class="py-6">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
